@@ -24,7 +24,7 @@ from gradio.components import (
 from gradio.events import Dependency, on
 from gradio.helpers import create_examples as Examples  # noqa: N812
 from gradio.helpers import special_args
-from gradio.layouts import Accordion, Group, Row
+from gradio.layouts import Accordion, Group, Row, Column
 from gradio.routes import Request
 from gradio.themes import ThemeClass as Theme
 from gradio.utils import SyncToAsyncIterator, async_iteration, async_lambda
@@ -178,15 +178,31 @@ class ChatInterface(Blocks):
             if description:
                 Markdown(description)
 
-            if chatbot:
-                self.chatbot = chatbot
-            else:
-                self.chatbot = Chatbot(
-                    label="Chatbot", scale=1, height=200 if fill_height else None
-                )
+            with Row():
+                with Column(scale=3):
+                    with Row():
+                        for btn in [retry_btn, undo_btn, clear_btn]:
+                            if btn is not None:
+                                if isinstance(btn, Button):
+                                    btn.render()
+                                elif isinstance(btn, str):
+                                    btn = Button(
+                                        btn, variant="secondary", size="sm", min_width=60
+                                    )
+                                else:
+                                    raise ValueError(
+                                        f"All the _btn parameters must be a gr.Button, string, or None, not {type(btn)}"
+                                    )
+                            self.buttons.append(btn)  # type: ignore
 
-            with Group():
-                with Row():
+                    any_unrendered_inputs = any(
+                        not inp.is_rendered for inp in self.additional_inputs
+                    )
+
+                    self.additional_inputs_accordion_params['open'] = True
+
+                    self.chatbot = Chatbot(label='Omost', scale=1, bubble_full_width=True, render=False)
+
                     if textbox:
                         if self.multimodal:
                             submit_btn = None
@@ -207,6 +223,7 @@ class ChatInterface(Blocks):
                             placeholder="Type a message...",
                             scale=7,
                             autofocus=autofocus,
+                            render=False
                         )
                     else:
                         self.textbox = Textbox(
@@ -216,83 +233,73 @@ class ChatInterface(Blocks):
                             placeholder="Type a message...",
                             scale=7,
                             autofocus=autofocus,
+                            render=False
                         )
-                    if submit_btn is not None and not multimodal:
-                        if isinstance(submit_btn, Button):
-                            submit_btn.render()
-                        elif isinstance(submit_btn, str):
-                            submit_btn = Button(
-                                submit_btn,
-                                variant="primary",
-                                scale=1,
-                                min_width=150,
-                            )
-                        else:
-                            raise ValueError(
-                                f"The submit_btn parameter must be a gr.Button, string, or None, not {type(submit_btn)}"
-                            )
-                    if stop_btn is not None:
-                        if isinstance(stop_btn, Button):
-                            stop_btn.visible = False
-                            stop_btn.render()
-                        elif isinstance(stop_btn, str):
-                            stop_btn = Button(
-                                stop_btn,
-                                variant="stop",
-                                visible=False,
-                                scale=1,
-                                min_width=150,
-                            )
-                        else:
-                            raise ValueError(
-                                f"The stop_btn parameter must be a gr.Button, string, or None, not {type(stop_btn)}"
-                            )
-                    self.buttons.extend([submit_btn, stop_btn])  # type: ignore
 
-                self.fake_api_btn = Button("Fake API", visible=False)
-                self.fake_response_textbox = Textbox(label="Response", visible=False)
+                    if examples or self.additional_inputs and any_unrendered_inputs:
+                        with Accordion(**self.additional_inputs_accordion_params):  # type: ignore
+                            for input_component in self.additional_inputs:
+                                if not input_component.is_rendered:
+                                    input_component.render()
+                            if examples:
+                                if self.is_generator:
+                                    examples_fn = self._examples_stream_fn
+                                else:
+                                    examples_fn = self._examples_fn
 
-            with Row():
-                for btn in [retry_btn, undo_btn, clear_btn]:
-                    if btn is not None:
-                        if isinstance(btn, Button):
-                            btn.render()
-                        elif isinstance(btn, str):
-                            btn = Button(
-                                btn, variant="secondary", size="sm", min_width=60
-                            )
-                        else:
-                            raise ValueError(
-                                f"All the _btn parameters must be a gr.Button, string, or None, not {type(btn)}"
-                            )
-                    self.buttons.append(btn)  # type: ignore
+                                self.examples_handler = Examples(
+                                    examples=examples,
+                                    inputs=[self.textbox] + self.additional_inputs,
+                                    outputs=self.chatbot,
+                                    fn=examples_fn,
+                                    cache_examples=self.cache_examples,
+                                    _defer_caching=True,
+                                    examples_per_page=examples_per_page,
+                                )
 
-            any_unrendered_inputs = any(
-                not inp.is_rendered for inp in self.additional_inputs
-            )
+                with Column(scale=7):
 
-            self.additional_inputs_accordion_params['open'] = True
+                    self.chatbot.render()
 
-            if examples or self.additional_inputs and any_unrendered_inputs:
-                with Accordion(**self.additional_inputs_accordion_params):  # type: ignore
-                    for input_component in self.additional_inputs:
-                        if not input_component.is_rendered:
-                            input_component.render()
-                    if examples:
-                        if self.is_generator:
-                            examples_fn = self._examples_stream_fn
-                        else:
-                            examples_fn = self._examples_fn
+                    with Group():
+                        with Row():
 
-                        self.examples_handler = Examples(
-                            examples=examples,
-                            inputs=[self.textbox] + self.additional_inputs,
-                            outputs=self.chatbot,
-                            fn=examples_fn,
-                            cache_examples=self.cache_examples,
-                            _defer_caching=True,
-                            examples_per_page=examples_per_page,
-                        )
+                            self.textbox.render()
+
+                            if submit_btn is not None and not multimodal:
+                                if isinstance(submit_btn, Button):
+                                    submit_btn.render()
+                                elif isinstance(submit_btn, str):
+                                    submit_btn = Button(
+                                        submit_btn,
+                                        variant="primary",
+                                        scale=1,
+                                        min_width=150,
+                                    )
+                                else:
+                                    raise ValueError(
+                                        f"The submit_btn parameter must be a gr.Button, string, or None, not {type(submit_btn)}"
+                                    )
+                            if stop_btn is not None:
+                                if isinstance(stop_btn, Button):
+                                    stop_btn.visible = False
+                                    stop_btn.render()
+                                elif isinstance(stop_btn, str):
+                                    stop_btn = Button(
+                                        stop_btn,
+                                        variant="stop",
+                                        visible=False,
+                                        scale=1,
+                                        min_width=150,
+                                    )
+                                else:
+                                    raise ValueError(
+                                        f"The stop_btn parameter must be a gr.Button, string, or None, not {type(stop_btn)}"
+                                    )
+                            self.buttons.extend([submit_btn, stop_btn])  # type: ignore
+
+                        self.fake_api_btn = Button("Fake API", visible=False)
+                        self.fake_response_textbox = Textbox(label="Response", visible=False)
 
             (
                 self.retry_btn,

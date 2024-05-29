@@ -253,7 +253,6 @@ code {white-space: pre-wrap !important;}
 with gr.Blocks(fill_height=True, css=css) as demo:
     ChatInterface(
         fn=chat_fn,
-        chatbot=gr.Chatbot(label='Omost', scale=1, bubble_full_width=True),
         additional_inputs_accordion=gr.Accordion(label="⚙️ Parameters", open=False, render=False),
         additional_inputs=[
             gr.Slider(minimum=0.0,
