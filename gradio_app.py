@@ -1,7 +1,7 @@
 import os
 
 os.environ['HF_HOME'] = os.path.join(os.path.dirname(__file__), 'hf_download')
-HF_TOKEN = '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'  # Remember to invalid this token when public repo
+HF_TOKEN = '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'  # Remember to invalid this token when public repo
 
 import torch
 import gradio as gr
@@ -18,9 +18,9 @@ import lib_omost.canvas as omost_canvas
 import lib_omost.memory_management as memory_management
 
 
-model_name = 'lllyasviel/omost-phi-3-mini-128k'
-# model_name = 'lllyasviel/omost-llama-3-8b'
-# model_name = 'lllyasviel/omost-dolphin-2.9-llama3-8b'
+model_name = 'lllyasviel/omost-phi-3-mini-128k-8bits'
+# model_name = 'lllyasviel/omost-llama-3-8b-4bits'
+# model_name = 'lllyasviel/omost-dolphin-2.9-llama3-8b-4bits'
 
 model = AutoModelForCausalLM.from_pretrained(
     model_name,
