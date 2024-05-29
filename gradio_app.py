@@ -32,13 +32,13 @@ tokenizer = CLIPTokenizer.from_pretrained(
 tokenizer_2 = CLIPTokenizer.from_pretrained(
     sdxl_name, subfolder="tokenizer_2")
 text_encoder = CLIPTextModel.from_pretrained(
-    sdxl_name, subfolder="text_encoder", torch_dtype=torch.float16, variant="fp16", device_map="auto")
+    sdxl_name, subfolder="text_encoder", torch_dtype=torch.float16, variant="fp16")
 text_encoder_2 = CLIPTextModel.from_pretrained(
-    sdxl_name, subfolder="text_encoder_2", torch_dtype=torch.float16, variant="fp16", device_map="auto")
+    sdxl_name, subfolder="text_encoder_2", torch_dtype=torch.float16, variant="fp16")
 vae = AutoencoderKL.from_pretrained(
-    sdxl_name, subfolder="vae", torch_dtype=torch.bfloat16, variant="fp16", device_map="auto")  # bfloat16 vae
+    sdxl_name, subfolder="vae", torch_dtype=torch.bfloat16, variant="fp16")  # bfloat16 vae
 unet = UNet2DConditionModel.from_pretrained(
-    sdxl_name, subfolder="unet", torch_dtype=torch.float16, variant="fp16", device_map="auto")
+    sdxl_name, subfolder="unet", torch_dtype=torch.float16, variant="fp16")
 
 memory_management.unload_all_models([text_encoder, text_encoder_2, vae, unet])
 
