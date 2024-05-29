@@ -100,8 +100,8 @@ with gr.Blocks(fill_height=True, css=css) as demo:
                       render=False),
         ],
         examples=[
-            ['a cat on the left and a dog on the right in a room'],
-            ['change the image into night']
+            ['a cat on a table in a room'],
+            ['make it on fire']
         ]
     )
 
