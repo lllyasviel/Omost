@@ -15,7 +15,6 @@ Phi3PreTrainedModel._supports_sdpa = True
 from transformers import AutoModelForCausalLM, AutoTokenizer, TextIteratorStreamer
 
 import lib_omost.canvas as omost_canvas
-import lib_omost.memory_management as memory_management
 
 
 model_name = 'lllyasviel/omost-phi-3-mini-128k-8bits'
@@ -26,6 +25,7 @@ model = AutoModelForCausalLM.from_pretrained(
     model_name,
     torch_dtype=torch.bfloat16,  # This is computation type, not load/memory type. The loading quant type is baked in config.
     token=HF_TOKEN,
+    device_map="auto"
 )
 
 tokenizer = AutoTokenizer.from_pretrained(
