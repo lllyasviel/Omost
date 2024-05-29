@@ -18,6 +18,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer, TextIteratorStream
 from diffusers import AutoencoderKL, UNet2DConditionModel
 from diffusers.models.attention_processor import AttnProcessor2_0
 from transformers import CLIPTextModel, CLIPTokenizer
+from lib_omost.pipeline import StableDiffusionXLOmostPipeline
 
 import lib_omost.canvas as omost_canvas
 
@@ -39,6 +40,16 @@ vae = AutoencoderKL.from_pretrained(
     sdxl_name, subfolder="vae", torch_dtype=torch.bfloat16, variant="fp16")  # bfloat16 vae
 unet = UNet2DConditionModel.from_pretrained(
     sdxl_name, subfolder="unet", torch_dtype=torch.float16, variant="fp16")
+
+pipeline = StableDiffusionXLOmostPipeline(
+    vae=vae,
+    text_encoder=text_encoder,
+    tokenizer=tokenizer,
+    text_encoder_2=text_encoder_2,
+    tokenizer_2=tokenizer_2,
+    unet=unet,
+    scheduler=None,  # We completely give up diffusers sampling system and use A1111's method
+)
 
 memory_management.unload_all_models([text_encoder, text_encoder_2, vae, unet])
 
