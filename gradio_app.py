@@ -21,26 +21,28 @@ import lib_omost.canvas as omost_canvas
 import lib_omost.memory_management as memory_management
 
 
-# # SDXL
-#
-# sdxl_name = 'SG161222/RealVisXL_V4.0'
-# # sdxl_name = 'stabilityai/stable-diffusion-xl-base-1.0'
-#
-# tokenizer = CLIPTokenizer.from_pretrained(
-#     sdxl_name, subfolder="tokenizer")
-# tokenizer_2 = CLIPTokenizer.from_pretrained(
-#     sdxl_name, subfolder="tokenizer_2")
-# text_encoder = CLIPTextModel.from_pretrained(
-#     sdxl_name, subfolder="text_encoder", torch_dtype=torch.float16, variant="fp16")
-# text_encoder_2 = CLIPTextModel.from_pretrained(
-#     sdxl_name, subfolder="text_encoder_2", torch_dtype=torch.float16, variant="fp16")
-# vae = AutoencoderKL.from_pretrained(
-#     sdxl_name, subfolder="vae", torch_dtype=torch.bfloat16, variant="fp16")  # bfloat16 vae
-# unet = UNet2DConditionModel.from_pretrained(
-#     sdxl_name, subfolder="unet", torch_dtype=torch.float16, variant="fp16")
-#
-# unet.set_attn_processor(AttnProcessor2_0())
-# vae.set_attn_processor(AttnProcessor2_0())
+# SDXL
+
+sdxl_name = 'SG161222/RealVisXL_V4.0'
+# sdxl_name = 'stabilityai/stable-diffusion-xl-base-1.0'
+
+tokenizer = CLIPTokenizer.from_pretrained(
+    sdxl_name, subfolder="tokenizer")
+tokenizer_2 = CLIPTokenizer.from_pretrained(
+    sdxl_name, subfolder="tokenizer_2")
+text_encoder = CLIPTextModel.from_pretrained(
+    sdxl_name, subfolder="text_encoder", torch_dtype=torch.float16, variant="fp16")
+text_encoder_2 = CLIPTextModel.from_pretrained(
+    sdxl_name, subfolder="text_encoder_2", torch_dtype=torch.float16, variant="fp16")
+vae = AutoencoderKL.from_pretrained(
+    sdxl_name, subfolder="vae", torch_dtype=torch.bfloat16, variant="fp16")  # bfloat16 vae
+unet = UNet2DConditionModel.from_pretrained(
+    sdxl_name, subfolder="unet", torch_dtype=torch.float16, variant="fp16")
+
+memory_management.unload_all_models([text_encoder, text_encoder_2, vae, unet])
+
+unet.set_attn_processor(AttnProcessor2_0())
+vae.set_attn_processor(AttnProcessor2_0())
 
 # LLM
 
