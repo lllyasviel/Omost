@@ -13,23 +13,49 @@ from transformers.models.phi3.modeling_phi3 import Phi3PreTrainedModel
 Phi3PreTrainedModel._supports_sdpa = True
 
 from transformers import AutoModelForCausalLM, AutoTokenizer, TextIteratorStreamer
+from diffusers import AutoencoderKL, UNet2DConditionModel
+from diffusers.models.attention_processor import AttnProcessor2_0
+from transformers import CLIPTextModel, CLIPTokenizer
 
 import lib_omost.canvas as omost_canvas
 
 
+# SDXL
+
+sdxl_name = 'SG161222/RealVisXL_V4.0'
+# sdxl_name = 'stabilityai/stable-diffusion-xl-base-1.0'
+
+tokenizer = CLIPTokenizer.from_pretrained(
+    sdxl_name, subfolder="tokenizer")
+tokenizer_2 = CLIPTokenizer.from_pretrained(
+    sdxl_name, subfolder="tokenizer_2")
+text_encoder = CLIPTextModel.from_pretrained(
+    sdxl_name, subfolder="text_encoder", torch_dtype=torch.float16, variant="fp16")
+text_encoder_2 = CLIPTextModel.from_pretrained(
+    sdxl_name, subfolder="text_encoder_2", torch_dtype=torch.float16, variant="fp16")
+vae = AutoencoderKL.from_pretrained(
+    sdxl_name, subfolder="vae", torch_dtype=torch.bfloat16, variant="fp16")  # bfloat16 vae
+unet = UNet2DConditionModel.from_pretrained(
+    sdxl_name, subfolder="unet", torch_dtype=torch.float16, variant="fp16")
+
+unet.set_attn_processor(AttnProcessor2_0())
+vae.set_attn_processor(AttnProcessor2_0())
+
+# LLM
+
 # model_name = 'lllyasviel/omost-phi-3-mini-128k-8bits'
-model_name = 'lllyasviel/omost-llama-3-8b-4bits'
+llm_name = 'lllyasviel/omost-llama-3-8b-4bits'
 # model_name = 'lllyasviel/omost-dolphin-2.9-llama3-8b-4bits'
 
-model = AutoModelForCausalLM.from_pretrained(
-    model_name,
+llm_model = AutoModelForCausalLM.from_pretrained(
+    llm_name,
     torch_dtype=torch.bfloat16,  # This is computation type, not load/memory type. The loading quant type is baked in config.
     token=HF_TOKEN,
     device_map="auto"
 )
 
-tokenizer = AutoTokenizer.from_pretrained(
-    model_name,
+llm_tokenizer = AutoTokenizer.from_pretrained(
+    llm_name,
     token=HF_TOKEN
 )
 
@@ -42,10 +68,10 @@ def chat_fn(message: str, history: list, temperature: float, top_p: float, max_n
 
     conversation.append({"role": "user", "content": message})
 
-    input_ids = tokenizer.apply_chat_template(
-        conversation, return_tensors="pt", add_generation_prompt=True).to(model.device)
+    input_ids = llm_tokenizer.apply_chat_template(
+        conversation, return_tensors="pt", add_generation_prompt=True).to(llm_model.device)
 
-    streamer = TextIteratorStreamer(tokenizer, timeout=10.0, skip_prompt=True, skip_special_tokens=True)
+    streamer = TextIteratorStreamer(llm_tokenizer, timeout=10.0, skip_prompt=True, skip_special_tokens=True)
 
     generate_kwargs = dict(
         input_ids=input_ids,
@@ -59,7 +85,7 @@ def chat_fn(message: str, history: list, temperature: float, top_p: float, max_n
     if temperature == 0:
         generate_kwargs['do_sample'] = False
 
-    Thread(target=model.generate, kwargs=generate_kwargs).start()
+    Thread(target=llm_model.generate, kwargs=generate_kwargs).start()
 
     outputs = []
     for text in streamer:
