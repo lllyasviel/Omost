@@ -17,8 +17,8 @@ from transformers import AutoModelForCausalLM, AutoTokenizer, TextIteratorStream
 import lib_omost.canvas as omost_canvas
 
 
-model_name = 'lllyasviel/omost-phi-3-mini-128k-8bits'
-# model_name = 'lllyasviel/omost-llama-3-8b-4bits'
+# model_name = 'lllyasviel/omost-phi-3-mini-128k-8bits'
+model_name = 'lllyasviel/omost-llama-3-8b-4bits'
 # model_name = 'lllyasviel/omost-dolphin-2.9-llama3-8b-4bits'
 
 model = AutoModelForCausalLM.from_pretrained(
