@@ -74,7 +74,7 @@ class ChatInterface(Blocks):
         stop_btn: str | None | Button = "Stop",
         retry_btn: str | None | Button = "🔄  Retry",
         undo_btn: str | None | Button = "↩️ Undo",
-        clear_btn: str | None | Button = "🗑️  Clear",
+        clear_btn: str | None | Button = "⭐ New Chat",
         autofocus: bool = True,
         concurrency_limit: int | None | Literal["default"] = "default",
         fill_height: bool = True,
@@ -185,21 +185,6 @@ class ChatInterface(Blocks):
                     label="Chatbot", scale=1, height=200 if fill_height else None
                 )
 
-            with Row():
-                for btn in [retry_btn, undo_btn, clear_btn]:
-                    if btn is not None:
-                        if isinstance(btn, Button):
-                            btn.render()
-                        elif isinstance(btn, str):
-                            btn = Button(
-                                btn, variant="secondary", size="sm", min_width=60
-                            )
-                        else:
-                            raise ValueError(
-                                f"All the _btn parameters must be a gr.Button, string, or None, not {type(btn)}"
-                            )
-                    self.buttons.append(btn)  # type: ignore
-
             with Group():
                 with Row():
                     if textbox:
@@ -266,38 +251,56 @@ class ChatInterface(Blocks):
 
                 self.fake_api_btn = Button("Fake API", visible=False)
                 self.fake_response_textbox = Textbox(label="Response", visible=False)
-                (
-                    self.retry_btn,
-                    self.undo_btn,
-                    self.clear_btn,
-                    self.submit_btn,
-                    self.stop_btn,
-                ) = self.buttons
 
-            if examples:
-                if self.is_generator:
-                    examples_fn = self._examples_stream_fn
-                else:
-                    examples_fn = self._examples_fn
-
-                self.examples_handler = Examples(
-                    examples=examples,
-                    inputs=[self.textbox] + self.additional_inputs,
-                    outputs=self.chatbot,
-                    fn=examples_fn,
-                    cache_examples=self.cache_examples,
-                    _defer_caching=True,
-                    examples_per_page=examples_per_page,
-                )
+            with Row():
+                for btn in [retry_btn, undo_btn, clear_btn]:
+                    if btn is not None:
+                        if isinstance(btn, Button):
+                            btn.render()
+                        elif isinstance(btn, str):
+                            btn = Button(
+                                btn, variant="secondary", size="sm", min_width=60
+                            )
+                        else:
+                            raise ValueError(
+                                f"All the _btn parameters must be a gr.Button, string, or None, not {type(btn)}"
+                            )
+                    self.buttons.append(btn)  # type: ignore
 
             any_unrendered_inputs = any(
                 not inp.is_rendered for inp in self.additional_inputs
             )
-            if self.additional_inputs and any_unrendered_inputs:
+
+            self.additional_inputs_accordion_params['open'] = True
+
+            if examples or self.additional_inputs and any_unrendered_inputs:
                 with Accordion(**self.additional_inputs_accordion_params):  # type: ignore
                     for input_component in self.additional_inputs:
                         if not input_component.is_rendered:
                             input_component.render()
+                    if examples:
+                        if self.is_generator:
+                            examples_fn = self._examples_stream_fn
+                        else:
+                            examples_fn = self._examples_fn
+
+                        self.examples_handler = Examples(
+                            examples=examples,
+                            inputs=[self.textbox] + self.additional_inputs,
+                            outputs=self.chatbot,
+                            fn=examples_fn,
+                            cache_examples=self.cache_examples,
+                            _defer_caching=True,
+                            examples_per_page=examples_per_page,
+                        )
+
+            (
+                self.retry_btn,
+                self.undo_btn,
+                self.clear_btn,
+                self.submit_btn,
+                self.stop_btn,
+            ) = self.buttons
 
             # The example caching must happen after the input components have rendered
             if examples:
