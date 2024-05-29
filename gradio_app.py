@@ -24,7 +24,7 @@ model_name = 'lllyasviel/omost-phi-3-mini-128k-8bits'
 
 model = AutoModelForCausalLM.from_pretrained(
     model_name,
-    torch_dtype=torch.bfloat16,  # this is computation type - the quant type is in config
+    torch_dtype=torch.bfloat16,  # This is computation type, not load/memory type. The loading quant type is baked in config.
     token=HF_TOKEN,
 )
 
