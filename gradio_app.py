@@ -21,6 +21,7 @@ from diffusers import AutoencoderKL, UNet2DConditionModel
 from diffusers.models.attention_processor import AttnProcessor2_0
 from transformers import CLIPTextModel, CLIPTokenizer
 from lib_omost.pipeline import StableDiffusionXLOmostPipeline
+from chat_interface import ChatInterface
 
 import lib_omost.canvas as omost_canvas
 
@@ -249,12 +250,10 @@ code {white-space: pre-wrap !important;}
 .gradio-container {max-width: none !important;}
 '''
 
-chatbot = gr.Chatbot(label='Omost', scale=1, bubble_full_width=True)
-
 with gr.Blocks(fill_height=True, css=css) as demo:
-    gr.ChatInterface(
+    ChatInterface(
         fn=chat_fn,
-        chatbot=chatbot,
+        chatbot=gr.Chatbot(label='Omost', scale=1, bubble_full_width=True),
         additional_inputs_accordion=gr.Accordion(label="⚙️ Parameters", open=False, render=False),
         additional_inputs=[
             gr.Slider(minimum=0.0,
