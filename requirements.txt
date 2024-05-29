@@ -8,3 +8,4 @@ einops
 torch
 peft
 protobuf==3.20
+tensorboardX
