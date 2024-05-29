@@ -15,12 +15,12 @@ def load_models_to_gpu(models):
 
     if not high_vram:
         for m in models_in_gpu:
-            m.to(cpu)
+            m.cpu()  # cannot use m.to(cpu) because of bnb
             print('Unload to CPU:', m.__class__.__name__)
         models_in_gpu = []
 
     for m in models_to_load:
-        m.to(gpu)
+        m.cuda()  # cannot use m.to(gpu) because of bnb
         print('Load to GPU:', m.__class__.__name__)
 
     models_in_gpu = list(set(models_in_gpu + models))
