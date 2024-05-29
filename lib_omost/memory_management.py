@@ -1,6 +1,3 @@
-# A super simple version of model management
-# wHy sO seRiOuS?
-
 import torch
 from contextlib import contextmanager
 
@@ -8,6 +5,9 @@ from contextlib import contextmanager
 high_vram = False
 gpu = torch.device('cuda')
 cpu = torch.device('cpu')
+
+torch.zeros((1, 1)).to(gpu, torch.float32)
+torch.cuda.empty_cache()
 
 models_in_gpu = []
 

@@ -3,6 +3,8 @@ import os
 os.environ['HF_HOME'] = os.path.join(os.path.dirname(__file__), 'hf_download')
 HF_TOKEN = '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'  # Remember to invalid this token when public repo
 
+import lib_omost.memory_management as memory_management
+
 import torch
 import gradio as gr
 
@@ -18,7 +20,6 @@ from diffusers.models.attention_processor import AttnProcessor2_0
 from transformers import CLIPTextModel, CLIPTokenizer
 
 import lib_omost.canvas as omost_canvas
-import lib_omost.memory_management as memory_management
 
 
 # SDXL
