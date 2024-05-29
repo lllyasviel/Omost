@@ -244,7 +244,10 @@ def chat_fn(message: str, history: list, temperature: float, top_p: float, max_n
         yield "".join(outputs)
 
 
-css = '''code {white-space: pre-wrap !important;}'''
+css = '''
+code {white-space: pre-wrap !important;}
+.gradio-container {max-width: none !important;}
+'''
 
 chatbot = gr.Chatbot(label='Omost', scale=1, bubble_full_width=True)
 
