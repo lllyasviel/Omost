@@ -51,5 +51,15 @@ def load_models_to_gpu(models):
     return
 
 
-def unload_all_models():
+def unload_all_models(extra_models=None):
+    global models_in_gpu
+
+    if extra_models is None:
+        extra_models = []
+
+    if not isinstance(extra_models, (tuple, list)):
+        extra_models = [extra_models]
+
+    models_in_gpu = list(set(models_in_gpu + extra_models))
+
     return load_models_to_gpu([])
