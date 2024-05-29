@@ -43,6 +43,9 @@ vae = AutoencoderKL.from_pretrained(
 unet = UNet2DConditionModel.from_pretrained(
     sdxl_name, subfolder="unet", torch_dtype=torch.float16, variant="fp16")
 
+unet.set_attn_processor(AttnProcessor2_0())
+vae.set_attn_processor(AttnProcessor2_0())
+
 pipeline = StableDiffusionXLOmostPipeline(
     vae=vae,
     text_encoder=text_encoder,
@@ -54,9 +57,6 @@ pipeline = StableDiffusionXLOmostPipeline(
 )
 
 memory_management.unload_all_models([text_encoder, text_encoder_2, vae, unet])
-
-unet.set_attn_processor(AttnProcessor2_0())
-vae.set_attn_processor(AttnProcessor2_0())
 
 # This negative prompt is suggested by RealVisXL_V4 author
 # See also https://huggingface.co/SG161222/RealVisXL_V4.0
