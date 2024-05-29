@@ -59,7 +59,7 @@ def chat_fn(message: str, history: list, temperature: float, top_p: float, max_n
     if temperature == 0:
         generate_kwargs['do_sample'] = False
 
-    memory_management.load_models_to_gpu(model)
+    memory_management.load_models_to_gpu([model])
 
     Thread(target=model.generate, kwargs=generate_kwargs).start()
 
