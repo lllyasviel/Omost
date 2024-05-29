@@ -52,15 +52,15 @@ llm_model = AutoModelForCausalLM.from_pretrained(
     llm_name,
     torch_dtype=torch.bfloat16,  # This is computation type, not load/memory type. The loading quant type is baked in config.
     token=HF_TOKEN,
-    device_map="cpu"
+    device_map="auto"
 )
-
-memory_management.load_models_to_gpu(llm_model)
 
 llm_tokenizer = AutoTokenizer.from_pretrained(
     llm_name,
     token=HF_TOKEN
 )
+
+memory_management.models_in_gpu = [llm_model]  # We assume that llm_model is already in GPU since device_map="auto"
 
 
 def chat_fn(message: str, history: list, temperature: float, top_p: float, max_new_tokens: int) -> str:
@@ -70,6 +70,8 @@ def chat_fn(message: str, history: list, temperature: float, top_p: float, max_n
         conversation.extend([{"role": "user", "content": user}, {"role": "assistant", "content": assistant}])
 
     conversation.append({"role": "user", "content": message})
+
+    memory_management.load_models_to_gpu(llm_model)
 
     input_ids = llm_tokenizer.apply_chat_template(
         conversation, return_tensors="pt", add_generation_prompt=True).to(llm_model.device)

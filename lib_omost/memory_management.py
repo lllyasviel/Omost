@@ -19,6 +19,11 @@ def load_models_to_gpu(models):
 
     models_to_load = [m for m in set(models) if m not in models_in_gpu]
 
+    for m in models_to_load:
+        if hasattr(m, 'quantization_method'):
+            m.quantization_method_backup = m.quantization_method
+            del m.quantization_method
+
     if not high_vram:
         for m in models_in_gpu:
             m.to(cpu)
@@ -30,5 +35,11 @@ def load_models_to_gpu(models):
         print('Load to GPU:', m.__class__.__name__)
 
     models_in_gpu = list(set(models_in_gpu + models))
+
+    for m in models_to_load:
+        if hasattr(m, 'quantization_method_backup'):
+            m.quantization_method = m.quantization_method_backup
+            del m.quantization_method_backup
+
     torch.cuda.empty_cache()
     return
