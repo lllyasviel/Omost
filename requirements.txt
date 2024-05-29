@@ -1,12 +1,12 @@
 diffusers==0.28.0
 transformers==4.41.1
 gradio==4.31.5
+bitsandbytes==0.43.1
+protobuf==3.20
 opencv-python
+tensorboardX
 safetensors
 pillow
 einops
 torch
 peft
-protobuf==3.20
-tensorboardX
-bitsandbytes==0.43.1
