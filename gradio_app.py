@@ -18,6 +18,7 @@ from diffusers.models.attention_processor import AttnProcessor2_0
 from transformers import CLIPTextModel, CLIPTokenizer
 
 import lib_omost.canvas as omost_canvas
+import lib_omost.memory_management as memory_management
 
 
 # # SDXL
@@ -53,6 +54,8 @@ llm_model = AutoModelForCausalLM.from_pretrained(
     token=HF_TOKEN,
     device_map="cpu"
 )
+
+memory_management.load_models_to_gpu(llm_model)
 
 llm_tokenizer = AutoTokenizer.from_pretrained(
     llm_name,
