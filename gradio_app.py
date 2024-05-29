@@ -61,6 +61,7 @@ llm_tokenizer = AutoTokenizer.from_pretrained(
 )
 
 memory_management.models_in_gpu = [llm_model]  # We assume that llm_model is already in GPU since device_map="auto"
+memory_management.unload_all_models()
 
 
 def chat_fn(message: str, history: list, temperature: float, top_p: float, max_new_tokens: int) -> str:

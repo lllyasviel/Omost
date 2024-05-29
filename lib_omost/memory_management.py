@@ -43,3 +43,7 @@ def load_models_to_gpu(models):
 
     torch.cuda.empty_cache()
     return
+
+
+def unload_all_models():
+    return load_models_to_gpu([])
