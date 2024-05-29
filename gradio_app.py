@@ -26,65 +26,65 @@ from chat_interface import ChatInterface
 import lib_omost.canvas as omost_canvas
 
 
-# SDXL
-
-sdxl_name = 'SG161222/RealVisXL_V4.0'
-# sdxl_name = 'stabilityai/stable-diffusion-xl-base-1.0'
-
-tokenizer = CLIPTokenizer.from_pretrained(
-    sdxl_name, subfolder="tokenizer")
-tokenizer_2 = CLIPTokenizer.from_pretrained(
-    sdxl_name, subfolder="tokenizer_2")
-text_encoder = CLIPTextModel.from_pretrained(
-    sdxl_name, subfolder="text_encoder", torch_dtype=torch.float16, variant="fp16")
-text_encoder_2 = CLIPTextModel.from_pretrained(
-    sdxl_name, subfolder="text_encoder_2", torch_dtype=torch.float16, variant="fp16")
-vae = AutoencoderKL.from_pretrained(
-    sdxl_name, subfolder="vae", torch_dtype=torch.bfloat16, variant="fp16")  # bfloat16 vae
-unet = UNet2DConditionModel.from_pretrained(
-    sdxl_name, subfolder="unet", torch_dtype=torch.float16, variant="fp16")
-
-unet.set_attn_processor(AttnProcessor2_0())
-vae.set_attn_processor(AttnProcessor2_0())
-
-pipeline = StableDiffusionXLOmostPipeline(
-    vae=vae,
-    text_encoder=text_encoder,
-    tokenizer=tokenizer,
-    text_encoder_2=text_encoder_2,
-    tokenizer_2=tokenizer_2,
-    unet=unet,
-    scheduler=None,  # We completely give up diffusers sampling system and use A1111's method
-)
-
-memory_management.unload_all_models([text_encoder, text_encoder_2, vae, unet])
-
-# This negative prompt is suggested by RealVisXL_V4 author
-# See also https://huggingface.co/SG161222/RealVisXL_V4.0
-# Note that in A111's normalization, a full "(full sentence)" is equal to "full sentence"
-# so we can just remove SG161222's braces
-
-default_negative = 'face asymmetry, eyes asymmetry, deformed eyes, open mouth'
-
-# LLM
-
-# model_name = 'lllyasviel/omost-phi-3-mini-128k-8bits'
-llm_name = 'lllyasviel/omost-llama-3-8b-4bits'
-# model_name = 'lllyasviel/omost-dolphin-2.9-llama3-8b-4bits'
-
-llm_model = AutoModelForCausalLM.from_pretrained(
-    llm_name,
-    torch_dtype=torch.bfloat16,  # This is computation type, not load/memory type. The loading quant type is baked in config.
-    token=HF_TOKEN,
-    device_map="auto"  # This will load model to gpu with an offload system
-)
-
-llm_tokenizer = AutoTokenizer.from_pretrained(
-    llm_name,
-    token=HF_TOKEN
-)
-
-memory_management.unload_all_models(llm_model)
+# # SDXL
+#
+# sdxl_name = 'SG161222/RealVisXL_V4.0'
+# # sdxl_name = 'stabilityai/stable-diffusion-xl-base-1.0'
+#
+# tokenizer = CLIPTokenizer.from_pretrained(
+#     sdxl_name, subfolder="tokenizer")
+# tokenizer_2 = CLIPTokenizer.from_pretrained(
+#     sdxl_name, subfolder="tokenizer_2")
+# text_encoder = CLIPTextModel.from_pretrained(
+#     sdxl_name, subfolder="text_encoder", torch_dtype=torch.float16, variant="fp16")
+# text_encoder_2 = CLIPTextModel.from_pretrained(
+#     sdxl_name, subfolder="text_encoder_2", torch_dtype=torch.float16, variant="fp16")
+# vae = AutoencoderKL.from_pretrained(
+#     sdxl_name, subfolder="vae", torch_dtype=torch.bfloat16, variant="fp16")  # bfloat16 vae
+# unet = UNet2DConditionModel.from_pretrained(
+#     sdxl_name, subfolder="unet", torch_dtype=torch.float16, variant="fp16")
+#
+# unet.set_attn_processor(AttnProcessor2_0())
+# vae.set_attn_processor(AttnProcessor2_0())
+#
+# pipeline = StableDiffusionXLOmostPipeline(
+#     vae=vae,
+#     text_encoder=text_encoder,
+#     tokenizer=tokenizer,
+#     text_encoder_2=text_encoder_2,
+#     tokenizer_2=tokenizer_2,
+#     unet=unet,
+#     scheduler=None,  # We completely give up diffusers sampling system and use A1111's method
+# )
+#
+# memory_management.unload_all_models([text_encoder, text_encoder_2, vae, unet])
+#
+# # This negative prompt is suggested by RealVisXL_V4 author
+# # See also https://huggingface.co/SG161222/RealVisXL_V4.0
+# # Note that in A111's normalization, a full "(full sentence)" is equal to "full sentence"
+# # so we can just remove SG161222's braces
+#
+# default_negative = 'face asymmetry, eyes asymmetry, deformed eyes, open mouth'
+#
+# # LLM
+#
+# # model_name = 'lllyasviel/omost-phi-3-mini-128k-8bits'
+# llm_name = 'lllyasviel/omost-llama-3-8b-4bits'
+# # model_name = 'lllyasviel/omost-dolphin-2.9-llama3-8b-4bits'
+#
+# llm_model = AutoModelForCausalLM.from_pretrained(
+#     llm_name,
+#     torch_dtype=torch.bfloat16,  # This is computation type, not load/memory type. The loading quant type is baked in config.
+#     token=HF_TOKEN,
+#     device_map="auto"  # This will load model to gpu with an offload system
+# )
+#
+# llm_tokenizer = AutoTokenizer.from_pretrained(
+#     llm_name,
+#     token=HF_TOKEN
+# )
+#
+# memory_management.unload_all_models(llm_model)
 
 
 @torch.inference_mode()
