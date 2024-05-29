@@ -56,6 +56,13 @@ memory_management.unload_all_models([text_encoder, text_encoder_2, vae, unet])
 unet.set_attn_processor(AttnProcessor2_0())
 vae.set_attn_processor(AttnProcessor2_0())
 
+# This negative prompt is suggested by RealVisXL_V4 author
+# See also https://huggingface.co/SG161222/RealVisXL_V4.0
+# Note that in A111's normalization, a full "(full sentence)" is equal to "full sentence"
+# so we can just remove SG161222's braces
+
+default_negative = 'face asymmetry, eyes asymmetry, deformed eyes, open mouth'
+
 # LLM
 
 # model_name = 'lllyasviel/omost-phi-3-mini-128k-8bits'
