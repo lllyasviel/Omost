@@ -2,7 +2,7 @@
 
 Omost is a project to convert LLM's coding capability to image generation (or more accurately, image composing) capability. 
 
-The name `Omost` has two meanings: (1) everytime after you use Omost, your image is almost there; (2) the `O` mean "omni" (multi-model) and `most` means we want to get most of it.
+The name `Omost` (pronunciation: almost) has two meanings: 1) everytime after you use Omost, your image is almost there; 2) the `O` mean "omni" (multi-model) and `most` means we want to get most of it.
 
 # Get Started
 
