@@ -36,7 +36,7 @@ Or, you can use the below deployment (requires 8GB Nvidia VRAM):
 
 <details>
 <summary>Screenshots</summary>
-![image](https://github.com/lllyasviel/Omost/assets/19834515/0b3479c8-a157-4c4e-b865-d32355da6bc6)
+<img src="https://github.com/lllyasviel/Omost/assets/19834515/0b3479c8-a157-4c4e-b865-d32355da6bc6"  alt=""/>
 </details>
 
 ### User
@@ -337,9 +337,9 @@ canvas.add_local_description(
 (User can click the render button to actually render the image from any of those `Canvas` instances.)
 
 <details>
-  <summary>Screenshots</summary>
-![image](https://github.com/lllyasviel/Omost/assets/19834515/eaddedef-d038-4119-8496-0f481350bf37)
-![image](https://github.com/lllyasviel/Omost/assets/19834515/e6cf4120-2e95-4580-be8b-36221c0f4d35)
+<summary>Screenshots</summary>
+<img src="https://github.com/lllyasviel/Omost/assets/19834515/eaddedef-d038-4119-8496-0f481350bf37"  alt=""/>
+<img src="https://github.com/lllyasviel/Omost/assets/19834515/e6cf4120-2e95-4580-be8b-36221c0f4d35"  alt=""/>
 </details>
 
 # Symbols
