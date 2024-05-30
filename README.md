@@ -50,7 +50,7 @@ Some notes:
 4. The `omost-dolphin-2.9-llama3-8b-4bits` is trained with all data WITHOUT any filtering. You must apply your own safety alignment methods if you expose any service of `omost-dolphin-2.9-llama3-8b-4bits` to public.
 5. Note that the filtering in (3) is not because of any policy - the reason is that I noticed slight instability in training gradients in those models since they are pretrained with instruct following regulated by safety alignment, causing the performance to degrade a bit. But the instruct following of `omost-dolphin-2.9-llama3-8b-4bits` is pretrained with community efforts and do not have this problem.
 6. The 128k context length of `omost-phi-3-mini-128k` cannot be trusted. The performance of it will degrade a lot after the tokens reach about 8k. One should just view it as a model with about 8k content length.
-7. A model of 8k context length can do about 5 to 6 rounds of conversational editing. It is highly recommended to use the UI to modify your message and respond again (this can be done infinite times) if you plan to conduct a massive amount of editing.
-8. All models are fully trained with our H100 clusters at precision fp16 without any tricks like quant or Q-LoRA etc.
+7. A model of 8k context length can do about 5 to 6 rounds of conversational editing. If you are about to run out of token lengths, use the UI to modify your message and respond again (this can be done with infinite times).
+8. All models are fully trained with our H100 clusters at precision fp16 without any tricks like quant or Q-LoRA etc. The optimizer is Adam without any tricks.
 9. You must also follow the licenses of Llama-3 and Phi-3.
 10. You can request us to train on other LLMs if reasonable and necessary.
