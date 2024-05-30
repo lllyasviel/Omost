@@ -252,8 +252,10 @@ def chat_fn_dummy(message: str, history: list, temperature: float, top_p: float,
 
 def diffusion_fn(chatbot, num_samples, seed, image_width, image_height,
                  highres_scale, steps, cfg, highres_steps, highres_denoise, n_prompt):
-    a = 0
-    return chatbot
+    import cv2
+    pth = os.path.join(gradio_temp_dir, 'aaa.png')
+    cv2.imwrite(pth, np.zeros(shape=(512, 512, 3), dtype=np.uint8))
+    return chatbot + [(None, (pth, ''))]
 
 
 css = '''
