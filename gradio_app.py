@@ -112,6 +112,9 @@ def resize_without_crop(image, target_width, target_height):
 
 @torch.inference_mode()
 def chat_fn(message: str, history: list, temperature: float, top_p: float, max_new_tokens: int) -> str:
+    yield 'hi'
+    return
+
     conversation = [{"role": "system", "content": omost_canvas.system_prompt}]
 
     for user, assistant in history:

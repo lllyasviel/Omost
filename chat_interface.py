@@ -98,6 +98,10 @@ class ChatInterface(Blocks):
         if post_fn_inputs is None:
             post_fn_inputs = []
 
+        self.post_fn = post_fn
+        self.post_fn_outputs = post_fn_outputs
+        self.post_fn_inputs = post_fn_inputs
+
         self.multimodal = multimodal
         self.concurrency_limit = concurrency_limit
         self.fn = fn
@@ -281,6 +285,14 @@ class ChatInterface(Blocks):
                 concurrency_limit=cast(
                     Union[int, Literal["default"], None], self.concurrency_limit
                 ),
+            ).then(
+                self.post_fn,
+                [self.chatbot_state] + self.post_fn_inputs,
+                self.post_fn_outputs,
+                show_api=False,
+                concurrency_limit=cast(
+                    Union[int, Literal["default"], None], self.concurrency_limit
+                ),
             )
         )
         self._setup_stop_events(submit_triggers, submit_event)
@@ -309,7 +321,15 @@ class ChatInterface(Blocks):
                     concurrency_limit=cast(
                         Union[int, Literal["default"], None], self.concurrency_limit
                     ),
-                )
+                ).then(
+                self.post_fn,
+                [self.chatbot_state] + self.post_fn_inputs,
+                self.post_fn_outputs,
+                show_api=False,
+                concurrency_limit=cast(
+                    Union[int, Literal["default"], None], self.concurrency_limit
+                ),
+            )
             )
             self._setup_stop_events([self.retry_btn.click], retry_event)
 
@@ -326,6 +346,14 @@ class ChatInterface(Blocks):
                 [self.textbox],
                 show_api=False,
                 queue=False,
+            ).then(
+                self.post_fn,
+                [self.chatbot_state] + self.post_fn_inputs,
+                self.post_fn_outputs,
+                show_api=False,
+                concurrency_limit=cast(
+                    Union[int, Literal["default"], None], self.concurrency_limit
+                ),
             )
 
         if self.clear_btn:
@@ -335,6 +363,14 @@ class ChatInterface(Blocks):
                 [self.chatbot, self.chatbot_state, self.saved_input],
                 queue=False,
                 show_api=False,
+            ).then(
+                self.post_fn,
+                [self.chatbot_state] + self.post_fn_inputs,
+                self.post_fn_outputs,
+                show_api=False,
+                concurrency_limit=cast(
+                    Union[int, Literal["default"], None], self.concurrency_limit
+                ),
             )
 
     def _setup_stop_events(
