@@ -593,6 +593,10 @@ The `atmosphere` and `style` and `quality_meta` are some experimental parameters
 
 # A Baseline Renderer
 
+In this repo, we provide a baseline render for Omost LLMs based on attention masks.
+
+
+
 # Examples
 
 # Model Notes
