@@ -28,6 +28,7 @@ from diffusers.models.attention_processor import AttnProcessor2_0
 from transformers import CLIPTextModel, CLIPTokenizer
 from lib_omost.pipeline import StableDiffusionXLOmostPipeline
 from chat_interface import ChatInterface
+from transformers.generation.stopping_criteria import StoppingCriteriaList
 
 import lib_omost.canvas as omost_canvas
 
@@ -131,9 +132,23 @@ def chat_fn(message: str, history: list, seed:int, temperature: float, top_p: fl
 
     streamer = TextIteratorStreamer(llm_tokenizer, timeout=10.0, skip_prompt=True, skip_special_tokens=True)
 
+    def interactive_stopping_criteria(input_ids: torch.LongTensor, score: torch.FloatTensor, **kwargs) -> bool:
+        if getattr(streamer, 'user_interrupted', False):
+            print('User stopped generation')
+            return True
+        else:
+            return False
+
+    stopping_criteria = StoppingCriteriaList([interactive_stopping_criteria])
+
+    def interrupter():
+        streamer.user_interrupted = True
+        return
+
     generate_kwargs = dict(
         input_ids=input_ids,
         streamer=streamer,
+        stopping_criteria=stopping_criteria,
         max_new_tokens=max_new_tokens,
         do_sample=True,
         temperature=temperature,
@@ -149,7 +164,7 @@ def chat_fn(message: str, history: list, seed:int, temperature: float, top_p: fl
     for text in streamer:
         outputs.append(text)
         # print(outputs)
-        yield "".join(outputs)
+        yield "".join(outputs), interrupter
 
     return
 

@@ -32,14 +32,16 @@ def load_models_to_gpu(models):
     if not isinstance(models, (tuple, list)):
         models = [models]
 
+    models_to_remain = [m for m in set(models) if m in models_in_gpu]
     models_to_load = [m for m in set(models) if m not in models_in_gpu]
+    models_to_unload = [m for m in set(models_in_gpu) if m not in models_to_remain]
 
     if not high_vram:
-        for m in models_in_gpu:
+        for m in models_to_unload:
             with movable_bnb_model(m):
                 m.to(cpu)
             print('Unload to CPU:', m.__class__.__name__)
-        models_in_gpu = []
+        models_in_gpu = models_to_remain
 
     for m in models_to_load:
         with movable_bnb_model(m):

@@ -20,7 +20,7 @@ from gradio.components import (
     State,
     Textbox,
     get_component_instance,
-    Dataset
+    Dataset,
 )
 from gradio.events import Dependency, on
 from gradio.helpers import special_args
@@ -102,6 +102,8 @@ class ChatInterface(Blocks):
 
         self.pre_fn = pre_fn
         self.pre_fn_kwargs = pre_fn_kwargs
+
+        self.interrupter = State(None)
 
         self.multimodal = multimodal
         self.concurrency_limit = concurrency_limit
@@ -287,7 +289,7 @@ class ChatInterface(Blocks):
             .then(
                 submit_fn,
                 [self.saved_input, self.chatbot_state] + self.additional_inputs,
-                [self.chatbot, self.chatbot_state],
+                [self.chatbot, self.chatbot_state, self.interrupter],
                 show_api=False,
                 concurrency_limit=cast(
                     Union[int, Literal["default"], None], self.concurrency_limit
@@ -395,6 +397,11 @@ class ChatInterface(Blocks):
     def _setup_stop_events(
         self, event_triggers: list[Callable], event_to_cancel: Dependency
     ) -> None:
+        def perform_interrupt(ipc):
+            if ipc is not None:
+                ipc()
+            return
+
         if self.stop_btn and self.is_generator:
             if self.submit_btn:
                 for event_trigger in event_triggers:
@@ -434,9 +441,8 @@ class ChatInterface(Blocks):
                     queue=False,
                 )
             self.stop_btn.click(
-                None,
-                None,
-                None,
+                fn=perform_interrupt,
+                inputs=[self.interrupter],
                 cancels=event_to_cancel,
                 show_api=False,
             )
@@ -545,7 +551,7 @@ class ChatInterface(Blocks):
             )
             generator = SyncToAsyncIterator(generator, self.limiter)
         try:
-            first_response = await async_iteration(generator)
+            first_response, first_interrupter = await async_iteration(generator)
             if self.multimodal and isinstance(message, dict):
                 for x in message["files"]:
                     history.append([(x,), None])
@@ -553,21 +559,21 @@ class ChatInterface(Blocks):
                 yield update, update
             else:
                 update = history + [[message, first_response]]
-                yield update, update
+                yield update, update, first_interrupter
         except StopIteration:
             if self.multimodal and isinstance(message, dict):
                 self._append_multimodal_history(message, None, history)
                 yield history, history
             else:
                 update = history + [[message, None]]
-                yield update, update
-        async for response in generator:
+                yield update, update, first_interrupter
+        async for response, interrupter in generator:
             if self.multimodal and isinstance(message, dict):
                 update = history + [[message["text"], response]]
                 yield update, update
             else:
                 update = history + [[message, response]]
-                yield update, update
+                yield update, update, interrupter
 
     async def _api_submit_fn(
         self, message: str, history: list[list[str | None]], request: Request, *args
