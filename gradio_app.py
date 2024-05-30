@@ -317,7 +317,7 @@ with gr.Blocks(fill_height=True, css=css) as demo:
 
             examples = gr.Dataset(
                 samples=[
-                    ['generate an image of a cat on a table in a room'],
+                    ['generate an image of the king on the throne'],
                     ['make it on fire']
                 ],
                 components=[gr.Textbox(visible=False)],
@@ -339,7 +339,7 @@ with gr.Blocks(fill_height=True, css=css) as demo:
             )
 
     render_button.click(
-        fn=lambda: gr.update(visible=False), 
+        fn=lambda: gr.update(visible=False),
         outputs=[render_button]).then(
         fn=diffusion_fn, inputs=[
             chatInterface.chatbot, canvas_state,
