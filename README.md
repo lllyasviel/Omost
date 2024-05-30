@@ -8,6 +8,8 @@ Omost provides LLMs models that will write codes to compose image visual content
 
 Currently, we provide 3 pretrained LLM models based on Llama3 and Phi3 (see also the model notes at the end of this page).
 
+All models are trained with mixed data of (1) ground-truth annotations of several datasets including Open-Images, (2) extracted data by automatically annotating images, (3) reinforcement from DPO (Direct Preference Optimization, passing python compiler or not as preference), and (4) a small amount of tuning data from GPT4o's multi-modal capability.
+
 # Get Started
 
 You can just use the [official HuggingFace space](https://huggingface.co/spaces/lllyasviel/Omost).
