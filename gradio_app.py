@@ -319,7 +319,7 @@ with gr.Blocks(fill_height=True, css=css) as demo:
             examples = gr.Dataset(
                 samples=[
                     ['generate an image of the fierce battle of warriors and a dragon'],
-                    ['burn everything in this image with dark blue flames']
+                    ['change the dragon to a dinosaur']
                 ],
                 components=[gr.Textbox(visible=False)],
                 label='Quick Prompts'
