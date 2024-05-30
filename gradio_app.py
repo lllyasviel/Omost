@@ -255,6 +255,7 @@ code {white-space: pre-wrap !important;}
 .gradio-container {max-width: none !important;}
 .outer_parent {flex: 1;}
 .inner_parent {flex: 1;}
+footer {display: none;}
 '''
 
 with gr.Blocks(fill_height=True, css=css) as demo:
