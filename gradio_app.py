@@ -293,7 +293,7 @@ with gr.Blocks(fill_height=True, css=css) as demo:
         with gr.Column(scale=75, elem_classes='inner_parent'):
             ChatInterface(
                 fn=chat_fn_dummy,
-                chatbot=gr.Chatbot(label='Omost', scale=1, bubble_full_width=True, render=False),
+                chatbot_title='Omost',
                 additional_inputs_accordion=gr.Accordion(label="⚙️ Parameters", open=False, render=False),
                 additional_inputs=[
                     gr.Slider(minimum=0.0,
