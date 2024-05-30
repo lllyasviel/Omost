@@ -248,17 +248,18 @@ def chat_fn(message: str, history: list, temperature: float, top_p: float, max_n
 css = '''
 code {white-space: pre-wrap !important;}
 .gradio-container {max-width: none !important;}
+.outer_parent {flex: 1;}
+.inner_parent {flex: 1;}
 '''
 
 with gr.Blocks(fill_height=True, css=css) as demo:
-    with gr.Row():
+    with gr.Row(elem_classes='outer_parent'):
         with gr.Column(scale=25):
-            gr.Slider(minimum=0.0,
-                      maximum=2.0,
-                      step=0.01,
-                      value=0.6,
-                      label="Temperature")
-        with gr.Column(scale=75):
+            with gr.Row():
+                retry_btn = gr.Button("🔄 Retry", variant="secondary", size="sm", min_width=60)
+                undo_btn = gr.Button("↩️ Undo", variant="secondary", size="sm", min_width=60)
+                clear_btn = gr.Button("⭐️ new_chat", variant="secondary", size="sm", min_width=60)
+        with gr.Column(scale=75, elem_classes='inner_parent'):
             ChatInterface(
                 fn=chat_fn,
                 chatbot=gr.Chatbot(label='Omost', scale=1, bubble_full_width=True, render=False),
