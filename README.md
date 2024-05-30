@@ -407,7 +407,13 @@ class Canvas:
         pass
 ```
 
-# Baseline Implementation
+During training, the above symbols are associated with specific concepts and use cases related to image generation.
+
+The design is to make those codes easy to learn for LLMs, but also easy to handle for diffusion models.
+
+Lets breakdown each part of it:
+
+# A Baseline Renderer
 
 # Examples
 
