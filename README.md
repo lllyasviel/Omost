@@ -36,7 +36,7 @@ generate an image of the fierce battle of warriors and dinosaurs
 
 ### Assistance (model response)
 
-<pre><code style="white-space: pre-wrap !important;">
+```python
 # Initialize the canvas
 canvas = Canvas()
 
@@ -165,7 +165,7 @@ canvas.add_local_description(
     quality_meta='High-quality depiction with detailed textures and somber lighting.',
     HTML_web_color_name='dimgray',
 )
-</code></pre>
+```
 
 ### User
 
