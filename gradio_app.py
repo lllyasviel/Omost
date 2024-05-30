@@ -283,6 +283,13 @@ with gr.Blocks(fill_height=True, css=css) as demo:
                     step=1,
                     value=4096,
                     label="Max New Tokens")
+            examples = gr.Examples(
+                examples=[
+                    ['generate an image of a cat on a table in a room'],
+                    ['make it on fire']
+                ],
+                inputs=gr.Textbox(visible=False)
+            )
         with gr.Column(scale=75, elem_classes='inner_parent'):
             ChatInterface(
                 fn=chat_fn_dummy,
