@@ -329,8 +329,9 @@ with gr.Blocks(fill_height=True, css=css) as demo:
             chatInterface = ChatInterface(
                 fn=chat_fn,
                 post_fn=post_chat,
-                post_fn_inputs=[],
-                post_fn_outputs=[canvas_state, render_button],
+                post_fn_kwargs=dict(outputs=[canvas_state, render_button]),
+                pre_fn=lambda: gr.update(visible=False),
+                pre_fn_kwargs=dict(outputs=[render_button]),
                 chatbot_title='Omost',
                 retry_btn=retry_btn,
                 undo_btn=undo_btn,
