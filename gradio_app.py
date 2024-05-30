@@ -247,7 +247,7 @@ def chat_fn(message: str, history: list, temperature: float, top_p: float, max_n
 
 
 def chat_fn_dummy(message: str, history: list, temperature: float, top_p: float, max_new_tokens: int) -> str:
-    yield message
+    yield ' | ' .join([message, str(temperature), str(top_p), str(max_new_tokens)])
 
 
 css = '''
@@ -297,27 +297,7 @@ with gr.Blocks(fill_height=True, css=css) as demo:
                 retry_btn=retry_btn,
                 undo_btn=undo_btn,
                 clear_btn=clear_btn,
-                additional_inputs_accordion=gr.Accordion(label="⚙️ Parameters", open=False, render=False),
-                additional_inputs=[
-                    gr.Slider(minimum=0.0,
-                              maximum=2.0,
-                              step=0.01,
-                              value=0.6,
-                              label="Temperature",
-                              render=False),
-                    gr.Slider(minimum=0.0,
-                              maximum=1.0,
-                              step=0.01,
-                              value=0.9,
-                              label="Top P",
-                              render=False),
-                    gr.Slider(minimum=128,
-                              maximum=4096,
-                              step=1,
-                              value=4096,
-                              label="Max New Tokens",
-                              render=False),
-                ]
+                additional_inputs=[temperature, top_p, max_new_tokens]
             )
 
 if __name__ == "__main__":
