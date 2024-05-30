@@ -280,7 +280,7 @@ with gr.Blocks(fill_height=True, css=css) as demo:
                 undo_btn = gr.Button("↩️ Undo", variant="secondary", size="sm", min_width=60)
                 clear_btn = gr.Button("⭐️ New Chat", variant="secondary", size="sm", min_width=60)
 
-            seed = gr.Number(label="Seed", value=12345, precision=0)
+            seed = gr.Number(label="Random Seed", value=12345, precision=0)
 
             with gr.Accordion(open=True, label='Language Model'):
                 with gr.Group():
