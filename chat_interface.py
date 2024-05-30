@@ -54,9 +54,10 @@ class ChatInterface(Blocks):
         self,
         fn: Callable,
         post_fn: Callable,
+        pre_fn: Callable,
         *,
-        post_fn_inputs: list = None,
-        post_fn_outputs: list = None,
+        post_fn_kwargs: dict = None,
+        pre_fn_kwargs: dict = None,
         multimodal: bool = False,
         chatbot_title: str = 'Chat Bot',
         textbox: Textbox | MultimodalTextbox | None = None,
@@ -93,14 +94,14 @@ class ChatInterface(Blocks):
             delete_cache=delete_cache,
         )
 
-        if post_fn_outputs is None:
-            post_fn_outputs = []
-        if post_fn_inputs is None:
-            post_fn_inputs = []
+        if post_fn_kwargs is None:
+            post_fn_kwargs = []
 
         self.post_fn = post_fn
-        self.post_fn_outputs = post_fn_outputs
-        self.post_fn_inputs = post_fn_inputs
+        self.post_fn_kwargs = post_fn_kwargs
+
+        self.pre_fn = pre_fn
+        self.pre_fn_kwargs = pre_fn_kwargs
 
         self.multimodal = multimodal
         self.concurrency_limit = concurrency_limit
@@ -271,6 +272,12 @@ class ChatInterface(Blocks):
                 queue=False,
             )
             .then(
+                self.pre_fn,
+                **self.pre_fn_kwargs,
+                show_api=False,
+                queue=False,
+            )
+            .then(
                 self._display_input,
                 [self.saved_input, self.chatbot_state],
                 [self.chatbot, self.chatbot_state],
@@ -287,8 +294,7 @@ class ChatInterface(Blocks):
                 ),
             ).then(
                 self.post_fn,
-                [self.chatbot_state] + self.post_fn_inputs,
-                self.post_fn_outputs,
+                **self.post_fn_kwargs,
                 show_api=False,
                 concurrency_limit=cast(
                     Union[int, Literal["default"], None], self.concurrency_limit
@@ -303,6 +309,12 @@ class ChatInterface(Blocks):
                     self._delete_prev_fn,
                     [self.saved_input, self.chatbot_state],
                     [self.chatbot, self.saved_input, self.chatbot_state],
+                    show_api=False,
+                    queue=False,
+                )
+                .then(
+                    self.pre_fn,
+                    **self.pre_fn_kwargs,
                     show_api=False,
                     queue=False,
                 )
@@ -323,8 +335,7 @@ class ChatInterface(Blocks):
                     ),
                 ).then(
                 self.post_fn,
-                [self.chatbot_state] + self.post_fn_inputs,
-                self.post_fn_outputs,
+                **self.post_fn_kwargs,
                 show_api=False,
                 concurrency_limit=cast(
                     Union[int, Literal["default"], None], self.concurrency_limit
@@ -341,6 +352,11 @@ class ChatInterface(Blocks):
                 show_api=False,
                 queue=False,
             ).then(
+                self.pre_fn,
+                **self.pre_fn_kwargs,
+                show_api=False,
+                queue=False,
+            ).then(
                 async_lambda(lambda x: x),
                 [self.saved_input],
                 [self.textbox],
@@ -348,8 +364,7 @@ class ChatInterface(Blocks):
                 queue=False,
             ).then(
                 self.post_fn,
-                [self.chatbot_state] + self.post_fn_inputs,
-                self.post_fn_outputs,
+                **self.post_fn_kwargs,
                 show_api=False,
                 concurrency_limit=cast(
                     Union[int, Literal["default"], None], self.concurrency_limit
@@ -364,9 +379,13 @@ class ChatInterface(Blocks):
                 queue=False,
                 show_api=False,
             ).then(
+                self.pre_fn,
+                **self.pre_fn_kwargs,
+                show_api=False,
+                queue=False,
+            ).then(
                 self.post_fn,
-                [self.chatbot_state] + self.post_fn_inputs,
-                self.post_fn_outputs,
+                **self.post_fn_kwargs,
                 show_api=False,
                 concurrency_limit=cast(
                     Union[int, Literal["default"], None], self.concurrency_limit
