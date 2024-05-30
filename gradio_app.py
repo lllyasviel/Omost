@@ -283,21 +283,23 @@ with gr.Blocks(fill_height=True, css=css) as demo:
                     step=1,
                     value=4096,
                     label="Max New Tokens")
-            examples = gr.Examples(
-                examples=[
+            examples = gr.Dataset(
+                samples=[
                     ['generate an image of a cat on a table in a room'],
                     ['make it on fire']
                 ],
-                inputs=gr.Textbox(visible=False)
+                components=[gr.Textbox(visible=False)],
+                label='Try ...'
             )
         with gr.Column(scale=75, elem_classes='inner_parent'):
-            ChatInterface(
+            chatInterface = ChatInterface(
                 fn=chat_fn_dummy,
                 chatbot_title='Omost',
                 retry_btn=retry_btn,
                 undo_btn=undo_btn,
                 clear_btn=clear_btn,
-                additional_inputs=[temperature, top_p, max_new_tokens]
+                additional_inputs=[temperature, top_p, max_new_tokens],
+                examples=examples
             )
 
 if __name__ == "__main__":

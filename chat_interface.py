@@ -20,9 +20,9 @@ from gradio.components import (
     State,
     Textbox,
     get_component_instance,
+    Dataset
 )
 from gradio.events import Dependency, on
-from gradio.helpers import create_examples as Examples  # noqa: N812
 from gradio.helpers import special_args
 from gradio.layouts import Accordion, Group, Row
 from gradio.routes import Request
@@ -60,9 +60,7 @@ class ChatInterface(Blocks):
         additional_inputs: str | Component | list[str | Component] | None = None,
         additional_inputs_accordion_name: str | None = None,
         additional_inputs_accordion: str | Accordion | None = None,
-        examples: list[str] | list[dict[str, str | list]] | list[list] | None = None,
-        cache_examples: bool | Literal["lazy"] | None = None,
-        examples_per_page: int = 10,
+        examples: Dataset = None,
         title: str | None = None,
         description: str | None = None,
         theme: Theme | str | None = None,
@@ -103,7 +101,6 @@ class ChatInterface(Blocks):
         self.buttons: list[Button | None] = []
 
         self.examples = examples
-        self.cache_examples = cache_examples
 
         if additional_inputs:
             if not isinstance(additional_inputs, list):
@@ -230,20 +227,7 @@ class ChatInterface(Blocks):
                 ) = self.buttons
 
             if examples:
-                if self.is_generator:
-                    examples_fn = self._examples_stream_fn
-                else:
-                    examples_fn = self._examples_fn
-
-                self.examples_handler = Examples(
-                    examples=examples,
-                    inputs=[self.textbox] + self.additional_inputs,
-                    outputs=self.chatbot,
-                    fn=examples_fn,
-                    cache_examples=self.cache_examples,
-                    _defer_caching=True,
-                    examples_per_page=examples_per_page,
-                )
+                examples.click(lambda x: x[0], inputs=[examples], outputs=textbox, show_progress=False, queue=False)
 
             any_unrendered_inputs = any(
                 not inp.is_rendered for inp in self.additional_inputs
@@ -253,10 +237,6 @@ class ChatInterface(Blocks):
                     for input_component in self.additional_inputs:
                         if not input_component.is_rendered:
                             input_component.render()
-
-            # The example caching must happen after the input components have rendered
-            if examples:
-                self.examples_handler._start_caching()
 
             self.saved_input = State()
             self.chatbot_state = (
@@ -567,34 +547,6 @@ class ChatInterface(Blocks):
             yield None, history + [[message, None]]
         async for response in generator:
             yield response, history + [[message, response]]
-
-    async def _examples_fn(self, message: str, *args) -> list[list[str | None]]:
-        inputs, _, _ = special_args(self.fn, inputs=[message, [], *args], request=None)
-
-        if self.is_async:
-            response = await self.fn(*inputs)
-        else:
-            response = await anyio.to_thread.run_sync(
-                self.fn, *inputs, limiter=self.limiter
-            )
-        return [[message, response]]
-
-    async def _examples_stream_fn(
-        self,
-        message: str,
-        *args,
-    ) -> AsyncGenerator:
-        inputs, _, _ = special_args(self.fn, inputs=[message, [], *args], request=None)
-
-        if self.is_async:
-            generator = self.fn(*inputs)
-        else:
-            generator = await anyio.to_thread.run_sync(
-                self.fn, *inputs, limiter=self.limiter
-            )
-            generator = SyncToAsyncIterator(generator, self.limiter)
-        async for response in generator:
-            yield [[message, response]]
 
     async def _delete_prev_fn(
         self,
