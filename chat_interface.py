@@ -148,7 +148,7 @@ class ChatInterface(Blocks):
             self.buttons = [retry_btn, undo_btn, clear_btn]
 
             with Group():
-                with Row(elem_classes='text_area'):
+                with Row():
                     if textbox:
                         if self.multimodal:
                             submit_btn = None
