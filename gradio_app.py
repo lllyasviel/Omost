@@ -13,6 +13,7 @@ from threading import Thread
 
 # Phi3 Hijack
 from transformers.models.phi3.modeling_phi3 import Phi3PreTrainedModel
+
 Phi3PreTrainedModel._supports_sdpa = True
 
 from PIL import Image
@@ -259,6 +260,28 @@ with gr.Blocks(fill_height=True, css=css) as demo:
                 retry_btn = gr.Button("🔄 Retry", variant="secondary", size="sm", min_width=60)
                 undo_btn = gr.Button("↩️ Undo", variant="secondary", size="sm", min_width=60)
                 clear_btn = gr.Button("⭐️ New Chat", variant="secondary", size="sm", min_width=60)
+            with gr.Accordion(open=True, label='Advanced'):
+                temperature = gr.Slider(
+                    minimum=0.0,
+                    maximum=2.0,
+                    step=0.01,
+                    value=0.6,
+                    label="Temperature",
+                    render=False)
+                top_p = gr.Slider(
+                    minimum=0.0,
+                    maximum=1.0,
+                    step=0.01,
+                    value=0.9,
+                    label="Top P",
+                    render=False)
+                max_new_tokens = gr.Slider(
+                    minimum=128,
+                    maximum=4096,
+                    step=1,
+                    value=4096,
+                    label="Max New Tokens",
+                    render=False)
         with gr.Column(scale=75, elem_classes='inner_parent'):
             ChatInterface(
                 fn=chat_fn,
