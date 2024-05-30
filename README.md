@@ -495,11 +495,11 @@ First we divide a canvas into 3*3=9 locations:
 
 ![image](https://github.com/lllyasviel/Omost/assets/19834515/5d39cf93-c229-4c83-ae82-3eeeae2fabea)
 
-Then we further divide each location to 3*3 offsets, resulting in 9*9=81 positions:
+Then we further divide each location to 3\*3 offsets, resulting in 9\*9=81 positions:
 
 Using these positions as centers, we further define 9 types of bounding boxes:
 
-We can see that this method allows 9*9*9=729 different bounding boxes, covering almost all common possible locations of an object in the image.
+We can see that this method allows 9\*9\*9=729 different bounding boxes, covering almost all common possible locations of an object in the image.
 
 # A Baseline Renderer
 
