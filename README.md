@@ -577,6 +577,7 @@ possible_HTML_web_color_names = {  # r, g, b
 
 By combining `distance_to_viewer` and `HTML_web_color_name`, you can draw a very coarse image of the composition. For example, if the LLM works well, "a green bottle in front of a red bottle on a wood table in a dark room" should make it possible for you to compute an image like:
 
+![image](https://github.com/lllyasviel/Omost/assets/19834515/ab501872-bbcc-4fd4-8ab4-6fecd1a44d4d)
 
 
 # A Baseline Renderer
