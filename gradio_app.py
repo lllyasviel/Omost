@@ -266,62 +266,42 @@ with gr.Blocks(fill_height=True, css=css) as demo:
                 undo_btn = gr.Button("↩️ Undo", variant="secondary", size="sm", min_width=60)
                 clear_btn = gr.Button("⭐️ New Chat", variant="secondary", size="sm", min_width=60)
             with gr.Accordion(open=True, label='Language Model'):
-                temperature = gr.Slider(
-                    minimum=0.0,
-                    maximum=2.0,
-                    step=0.01,
-                    value=0.6,
-                    label="Temperature")
-                top_p = gr.Slider(
-                    minimum=0.0,
-                    maximum=1.0,
-                    step=0.01,
-                    value=0.9,
-                    label="Top P")
-                max_new_tokens = gr.Slider(
-                    minimum=128,
-                    maximum=4096,
-                    step=1,
-                    value=4096,
-                    label="Max New Tokens")
+                with gr.Group():
+                    with gr.Row():
+                        temperature = gr.Slider(
+                            minimum=0.0,
+                            maximum=2.0,
+                            step=0.01,
+                            value=0.6,
+                            label="Temperature")
+                        top_p = gr.Slider(
+                            minimum=0.0,
+                            maximum=1.0,
+                            step=0.01,
+                            value=0.9,
+                            label="Top P")
+                    max_new_tokens = gr.Slider(
+                        minimum=128,
+                        maximum=4096,
+                        step=1,
+                        value=4096,
+                        label="Max New Tokens")
             with gr.Accordion(open=True, label='Image Diffusion Model'):
-                temperature1 = gr.Slider(
-                    minimum=0.0,
-                    maximum=2.0,
-                    step=0.01,
-                    value=0.6,
-                    label="Temperature")
-                top_p1 = gr.Slider(
-                    minimum=0.0,
-                    maximum=1.0,
-                    step=0.01,
-                    value=0.9,
-                    label="Top P")
-                max_new_tokens1 = gr.Slider(
-                    minimum=128,
-                    maximum=4096,
-                    step=1,
-                    value=4096,
-                    label="Max New Tokens")
+                with gr.Group():
+                    with gr.Row():
+                        num_samples = gr.Slider(label="Images", minimum=1, maximum=12, value=1, step=1)
+                        seed = gr.Number(label="Seed", value=12345, precision=0)
+                    with gr.Row():
+                        image_width = gr.Slider(label="Image Width", minimum=256, maximum=2048, value=896, step=64)
+                        image_height = gr.Slider(label="Image Height", minimum=256, maximum=2048, value=1152, step=64)
+                    highres_scale = gr.Slider(label="Highres Fix Scale (1.0 is disabled)", minimum=1.0, maximum=2.0, value=1.0, step=0.01)
+
             with gr.Accordion(open=False, label='Advanced'):
-                temperature1 = gr.Slider(
-                    minimum=0.0,
-                    maximum=2.0,
-                    step=0.01,
-                    value=0.6,
-                    label="Temperature")
-                top_p1 = gr.Slider(
-                    minimum=0.0,
-                    maximum=1.0,
-                    step=0.01,
-                    value=0.9,
-                    label="Top P")
-                max_new_tokens1 = gr.Slider(
-                    minimum=128,
-                    maximum=4096,
-                    step=1,
-                    value=4096,
-                    label="Max New Tokens")
+                steps = gr.Slider(label="Sampling Steps", minimum=1, maximum=100, value=25, step=1)
+                cfg = gr.Slider(label="CFG Scale", minimum=1.0, maximum=32.0, value=2, step=0.01)
+                highres_steps = gr.Slider(label="Highres Fix Steps", minimum=1, maximum=100, value=25, step=1)
+                highres_denoise = gr.Slider(label="Highres Fix Denoise", minimum=0.1, maximum=1.0, value=0.5, step=0.01)
+                n_prompt = gr.Textbox(label="Negative Prompt", value='lowres, bad anatomy, bad hands, cropped, worst quality')
 
             gr.Button("Render the Image!", size='lg', variant="primary")
 
