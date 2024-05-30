@@ -411,7 +411,17 @@ During training, the above symbols are associated with specific concepts and use
 
 The design is to make those codes easy to learn for LLMs, but also easy to handle for diffusion models.
 
-Lets breakdown each part of it:
+Lets breakdown each part:
+
+## Function: Canvas.set_global_description and Canvas.add_local_description
+
+They set descriptions to images. The meanings of the parameters are same for them, with `add_local_description` having more fields than `set_global_description`.
+
+The `set_global_description` annotate entire image, while `add_local_description` annotates a part of image.
+
+## Parameter: description and detailed_descriptions
+
+
 
 # A Baseline Renderer
 
