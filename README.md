@@ -425,7 +425,7 @@ Let us introduce a concept called "sub-prompt". If a prompt (1) is less than 75 
 
 The `description` is a sub-prompt, and the `detailed_descriptions` is a list of sub-prompts.
 
-Note that each sub-prompt is strictly less than 75 tokens (and typically less than 40 tokens), you can safely encode them with any clip without worrying the truncation position affects the semantics.
+Note that each sub-prompt is strictly less than 75 tokens (and typically less than 40 tokens), you can safely encode them with any clip without worrying the truncation position affecting the semantics.
 
 The design of sub-prompt also allows more satisfying text encoding based on greedy merge. For example, if you have 
 
