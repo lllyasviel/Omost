@@ -317,8 +317,8 @@ with gr.Blocks(fill_height=True, css=css) as demo:
 
             examples = gr.Dataset(
                 samples=[
-                    ['generate an image of the king on the throne'],
-                    ['make it on fire']
+                    ['generate an image of the fierce battle of warriors and dragons'],
+                    ['burn everything with evil, impure, dark, immortal ghostly fire']
                 ],
                 components=[gr.Textbox(visible=False)],
                 label='Quick Prompts'
