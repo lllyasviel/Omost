@@ -501,6 +501,8 @@ Then we further divide each location to 3\*3 offsets, resulting in 9\*9=81 posit
 
 Using these positions as centers, we further define 9 types of bounding boxes:
 
+![image](https://github.com/lllyasviel/Omost/assets/19834515/0e484b73-680f-486b-8b61-4373c9eec9a0)
+
 We can see that this method allows 9\*9\*9=729 different bounding boxes, covering almost all common possible locations of an object in the image.
 
 # A Baseline Renderer
