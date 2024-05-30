@@ -491,6 +491,8 @@ assert area in [
 ]
 ```
 
+First we divide a canvas into 3*3=9 locations.
+
 # A Baseline Renderer
 
 # Examples
