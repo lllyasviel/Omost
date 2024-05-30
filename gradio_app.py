@@ -208,6 +208,8 @@ def chat_fn(message: str, history: list, temperature: float, top_p: float, max_n
     conversation = [{"role": "system", "content": omost_canvas.system_prompt}]
 
     for user, assistant in history:
+        if user is None or assistant is None:
+            continue
         conversation.extend([{"role": "user", "content": user}, {"role": "assistant", "content": assistant}])
 
     conversation.append({"role": "user", "content": message})
