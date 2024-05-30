@@ -4,6 +4,7 @@ os.environ['HF_HOME'] = os.path.join(os.path.dirname(__file__), 'hf_download')
 HF_TOKEN = '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'  # Remember to invalid this token when public repo
 
 import lib_omost.memory_management as memory_management
+import uuid
 
 import torch
 import numpy as np
@@ -242,7 +243,8 @@ def diffusion_fn(chatbot, num_samples, seed, image_width, image_height,
             pixels = pytorch2numpy(pixels)
 
         for i in range(len(pixels)):
-            image_path = os.path.join(gradio_temp_dir, f"output_{i}.png")
+            unique_hex = uuid.uuid4().hex
+            image_path = os.path.join(gradio_temp_dir, f"{unique_hex}_{i}.png")
             image = Image.fromarray(pixels[i])
             image.save(image_path)
             chatbot = chatbot + [(None, (image_path, 'image'))]
