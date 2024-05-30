@@ -155,8 +155,18 @@ def chat_fn(message: str, history: list, temperature: float, top_p: float, max_n
 
 
 @torch.inference_mode()
-def post_chat(chatbot):
-    return None
+def post_chat(history):
+    history = [(user, assistant) for user, assistant in history if isinstance(user, str) and isinstance(assistant, str)]
+    last_assistant = history[-1][1]
+    canvas_outputs = None
+
+    try:
+        canvas = omost_canvas.Canvas.from_bot_response(last_assistant)
+        canvas_outputs = canvas.process()
+    except Exception as e:
+        print('Last assistant response is not valid canvas:', e)
+
+    return canvas_outputs
 
 
 @torch.inference_mode()
