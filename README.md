@@ -36,11 +36,11 @@ generate an image of the fierce battle of warriors and dinosaurs
 
 ### Assistance (model response)
 
-```python
-# Initialize the canvas
-canvas = Canvas()
-
-# Set a global description for the canvas
+> ```python
+> # Initialize the canvas
+> canvas = Canvas()
+> 
+> # Set a global description for the canvas
 canvas.set_global_description(
     description='An intense battle scene featuring warriors and dinosaurs.',
     detailed_descriptions=[
