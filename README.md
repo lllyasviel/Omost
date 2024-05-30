@@ -579,6 +579,11 @@ By combining `distance_to_viewer` and `HTML_web_color_name`, you can draw a very
 
 ![image](https://github.com/lllyasviel/Omost/assets/19834515/ab501872-bbcc-4fd4-8ab4-6fecd1a44d4d)
 
+You can use this image as an initial latent and use denoise strength like 0.95 to 0.99 to generate the image.
+
+Or if you do not like this and still prefer to let diffusion models to generate from zero-mean (even when you know that most diffusion models have tsnr problems), you can ignore this image and or just use this image as a debugger.
+
+Besides, the layer sorting can also be useful in some very special attention formulation - we will discuss this later.
 
 # A Baseline Renderer
 
