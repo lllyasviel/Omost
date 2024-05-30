@@ -448,7 +448,7 @@ Encoding texts in this way will make sure that text-encoder will never make sema
 
 One may ask - if all sub-prompts are less than 75 tokens with independent semantics, why not just encode them without merge and then concat? This is mainly because we want the text embedding to be more coherent. For example, lets say sub-prompt A is "a man" while sub-prompt B is "handsome, professional", then merging them before encoding will give you a more mixed text embedding concept with coherent features of a handsome professional man. 
 
-All Omost LLMs are trained to give strictly sub-prompts. You can make use of this definition to design lossless text encoding methods.
+All Omost LLMs are trained to give strictly well-defined sub-prompts. You can make use of these definitions to design lossless text encoding methods.
 
 # A Baseline Renderer
 
