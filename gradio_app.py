@@ -132,7 +132,7 @@ def chat_fn(message: str, history: list, seed:int, temperature: float, top_p: fl
 
     streamer = TextIteratorStreamer(llm_tokenizer, timeout=10.0, skip_prompt=True, skip_special_tokens=True)
 
-    def interactive_stopping_criteria(input_ids: torch.LongTensor, score: torch.FloatTensor, **kwargs) -> bool:
+    def interactive_stopping_criteria(*args, **kwargs) -> bool:
         if getattr(streamer, 'user_interrupted', False):
             print('User stopped generation')
             return True
