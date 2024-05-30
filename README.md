@@ -358,7 +358,8 @@ class Canvas:
         pass
 
     def add_local_description(
-            self, location: str, 
+            self, 
+            location: str, 
             offset: str, 
             area: str, 
             distance_to_viewer: float, 
@@ -449,6 +450,46 @@ Encoding texts in this way will make sure that text-encoder will never make sema
 One may ask - if all sub-prompts are less than 75 tokens with independent semantics, why not just encode them without merge and then concat? This is mainly because we want the text embedding to be more coherent. For example, lets say sub-prompt A is "a man" while sub-prompt B is "handsome, professional", then merging them before encoding will give you a more mixed text embedding concept with coherent features of a handsome professional man. 
 
 All Omost LLMs are trained to give strictly well-defined sub-prompts. You can make use of these definitions to design lossless text encoding methods.
+
+### Parameter: location, offset, area
+
+The three parameters defines a bounding box. Note that they must obey
+
+```python
+assert location in [
+    "in the center", 
+    "on the left", 
+    "on the right", 
+    "on the top", 
+    "on the bottom", 
+    "on the top-left", 
+    "on the top-right", 
+    "on the bottom-left", 
+    "on the bottom-right"
+]
+assert offset in [
+    "no offset", 
+    "slightly to the left", 
+    "slightly to the right", 
+    "slightly to the upper", 
+    "slightly to the lower", 
+    "slightly to the upper-left", 
+    "slightly to the upper-right", 
+    "slightly to the lower-left", 
+    "slightly to the lower-right"
+]
+assert area in [
+    "a small square area", 
+    "a small vertical area", 
+    "a small horizontal area", 
+    "a medium-sized square area", 
+    "a medium-sized vertical area", 
+    "a medium-sized horizontal area", 
+    "a large square area", 
+    "a large vertical area", 
+    "a large horizontal area"
+]
+```
 
 # A Baseline Renderer
 
