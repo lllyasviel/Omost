@@ -304,7 +304,7 @@ with gr.Blocks(fill_height=True, css=css) as demo:
                     with gr.Row():
                         image_width = gr.Slider(label="Image Width", minimum=256, maximum=2048, value=896, step=64)
                         image_height = gr.Slider(label="Image Height", minimum=256, maximum=2048, value=1152, step=64)
-                    highres_scale = gr.Slider(label="Highres Fix Scale (1.0 is disabled)", minimum=1.0, maximum=2.0, value=1.0, step=0.01)
+                    highres_scale = gr.Slider(label="Highres Fix Scale (\"1\" is disabled)", minimum=1.0, maximum=2.0, value=1.0, step=0.01)
 
             with gr.Accordion(open=False, label='Advanced'):
                 steps = gr.Slider(label="Sampling Steps", minimum=1, maximum=100, value=25, step=1)
