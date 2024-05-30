@@ -329,6 +329,14 @@ canvas.add_local_description(
 )
 ```
 
+(Then user click the render button to actually render the image)
+
+![image](https://github.com/lllyasviel/Omost/assets/19834515/eaddedef-d038-4119-8496-0f481350bf37)
+
+
+![image](https://github.com/lllyasviel/Omost/assets/19834515/e6cf4120-2e95-4580-be8b-36221c0f4d35)
+
+
 # Symbols
 
 # Baseline Implementation
