@@ -493,6 +493,8 @@ assert area in [
 
 First we divide a canvas into 3*3=9 locations:
 
+![image](https://github.com/lllyasviel/Omost/assets/19834515/5d39cf93-c229-4c83-ae82-3eeeae2fabea)
+
 Then we further divide each location to 3*3 offsets, resulting in 9*9=81 positions:
 
 Using these positions as centers, we further define 9 types of bounding boxes:
