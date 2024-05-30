@@ -294,6 +294,9 @@ with gr.Blocks(fill_height=True, css=css) as demo:
             ChatInterface(
                 fn=chat_fn_dummy,
                 chatbot_title='Omost',
+                retry_btn=retry_btn,
+                undo_btn=undo_btn,
+                clear_btn=clear_btn,
                 additional_inputs_accordion=gr.Accordion(label="⚙️ Parameters", open=False, render=False),
                 additional_inputs=[
                     gr.Slider(minimum=0.0,

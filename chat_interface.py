@@ -153,18 +153,7 @@ class ChatInterface(Blocks):
 
             with Row():
                 for btn in [retry_btn, undo_btn, clear_btn]:
-                    if btn is not None:
-                        if isinstance(btn, Button):
-                            btn.render()
-                        elif isinstance(btn, str):
-                            btn = Button(
-                                btn, variant="secondary", size="sm", min_width=60
-                            )
-                        else:
-                            raise ValueError(
-                                f"All the _btn parameters must be a gr.Button, string, or None, not {type(btn)}"
-                            )
-                    self.buttons.append(btn)  # type: ignore
+                    self.buttons.append(btn)
 
             with Group():
                 with Row():
