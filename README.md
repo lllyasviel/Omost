@@ -331,7 +331,7 @@ canvas.add_local_description(
 )
 ```
 
-(Then user click the render button to actually render the image)
+(User can click the render button to actually render the image from any of those `Canvas` instances.)
 
 ![image](https://github.com/lllyasviel/Omost/assets/19834515/eaddedef-d038-4119-8496-0f481350bf37)
 
