@@ -166,17 +166,12 @@ def post_chat(history):
     except Exception as e:
         print('Last assistant response is not valid canvas:', e)
 
-    return canvas_outputs
+    return canvas_outputs, gr.update(visible=canvas_outputs is not None)
 
 
 @torch.inference_mode()
-def diffusion_fn(chatbot, num_samples, seed, image_width, image_height,
+def diffusion_fn(chatbot, canvas_outputs, num_samples, seed, image_width, image_height,
                  highres_scale, steps, cfg, highres_steps, highres_denoise, negative_prompt):
-
-    example_response = open('./example_outputs.md', 'rt', encoding='utf-8').read()
-    example_response = '```python\n' + example_response + '\n```'
-    canvas = omost_canvas.Canvas.from_bot_response(example_response)
-    canvas_outputs = canvas.process()
 
     use_initial_latent = False
     eps = 0.05
@@ -321,7 +316,7 @@ with gr.Blocks(fill_height=True, css=css) as demo:
                 highres_denoise = gr.Slider(label="Highres Fix Denoise", minimum=0.1, maximum=1.0, value=0.4, step=0.01)
                 n_prompt = gr.Textbox(label="Negative Prompt", value='lowres, bad anatomy, bad hands, cropped, worst quality')
 
-            render_button = gr.Button("Render the Image!", size='lg', variant="primary")
+            render_button = gr.Button("Render the Image!", size='lg', variant="primary", visible=False)
 
             examples = gr.Dataset(
                 samples=[
@@ -347,11 +342,11 @@ with gr.Blocks(fill_height=True, css=css) as demo:
             )
 
     render_button.click(fn=diffusion_fn, inputs=[
-        chatInterface.chatbot,
+        chatInterface.chatbot, canvas_state,
         num_samples, seed, image_width, image_height, highres_scale,
         steps, cfg, highres_steps, highres_denoise, n_prompt
     ], outputs=[chatInterface.chatbot]).then(
-        fn=lambda x: x, inputs=[chatInterface.chatbot], outputs=[chatInterface.chatbot_state])
+        fn=lambda x: x, inputs=[chatInterface.chatbot], outputs=[chatInterface.chatbot_state, render_button])
 
 if __name__ == "__main__":
     demo.queue().launch(inbrowser=True)
