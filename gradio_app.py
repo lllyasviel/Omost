@@ -330,4 +330,4 @@ with gr.Blocks(fill_height=True, css=css) as demo:
     ], outputs=[chatInterface.chatbot])
 
 if __name__ == "__main__":
-    demo.launch(inbrowser=True)
+    demo.queue().launch(inbrowser=True)
