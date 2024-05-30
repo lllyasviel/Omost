@@ -272,7 +272,12 @@ footer {display: none !important; visibility: hidden !important;}
 .translucent {display: none !important; visibility: hidden !important;}
 '''
 
-with gr.Blocks(fill_height=True, css=css) as demo:
+from gradio.themes.utils import colors
+
+with gr.Blocks(
+        fill_height=True, css=css,
+        theme=gr.themes.Default(primary_hue=colors.blue, secondary_hue=colors.cyan, neutral_hue=colors.gray)
+) as demo:
     with gr.Row(elem_classes='outer_parent'):
         with gr.Column(scale=25):
             with gr.Row():
