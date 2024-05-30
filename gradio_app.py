@@ -246,6 +246,10 @@ def chat_fn(message: str, history: list, temperature: float, top_p: float, max_n
         yield "".join(outputs)
 
 
+def chat_fn_dummy(message: str, history: list, temperature: float, top_p: float, max_new_tokens: int) -> str:
+    yield message
+
+
 css = '''
 code {white-space: pre-wrap !important;}
 .gradio-container {max-width: none !important;}
@@ -281,7 +285,7 @@ with gr.Blocks(fill_height=True, css=css) as demo:
                     label="Max New Tokens")
         with gr.Column(scale=75, elem_classes='inner_parent'):
             ChatInterface(
-                fn=chat_fn,
+                fn=chat_fn_dummy,
                 chatbot=gr.Chatbot(label='Omost', scale=1, bubble_full_width=True, render=False),
                 additional_inputs_accordion=gr.Accordion(label="⚙️ Parameters", open=False, render=False),
                 additional_inputs=[
