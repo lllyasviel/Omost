@@ -55,11 +55,11 @@ class ChatInterface(Blocks):
         fn: Callable,
         post_fn: Callable,
         pre_fn: Callable,
+        chatbot: Chatbot,
         *,
         post_fn_kwargs: dict = None,
         pre_fn_kwargs: dict = None,
         multimodal: bool = False,
-        chatbot_title: str = 'Chat Bot',
         textbox: Textbox | MultimodalTextbox | None = None,
         additional_inputs: str | Component | list[str | Component] | None = None,
         additional_inputs_accordion_name: str | None = None,
@@ -157,7 +157,7 @@ class ChatInterface(Blocks):
             if description:
                 Markdown(description)
 
-            self.chatbot = Chatbot(label=chatbot_title, scale=1, bubble_full_width=True)
+            self.chatbot = chatbot.render()
 
             self.buttons = [retry_btn, undo_btn, clear_btn]
 
