@@ -345,7 +345,7 @@ with gr.Blocks(
 
             examples = gr.Dataset(
                 samples=[
-                    ['generate an image of the fierce battle of warriors and the dragon'],
+                    ['generate an image of the fierce battle of warriors and a dragon'],
                     ['change the dragon to a dinosaur']
                 ],
                 components=[gr.Textbox(visible=False)],
