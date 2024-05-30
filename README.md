@@ -585,6 +585,12 @@ Or if you do not like this and still prefer to let diffusion models to generate 
 
 Besides, the layer sorting can also be useful in some very special attention formulation - we will discuss this later.
 
+# Parameter: tags and atmosphere and style and quality_meta
+
+The `tags` is designed as a possible replacement for the `description` since many diffusion models prefer tags. If used with anime models, one may hard code some logics to replace all "girl" to "1girl". If used with Pony then probably always hard code adding "score_9, score_8 ..." to this.
+
+The `atmosphere` and `style` and `quality_meta` are some experimental parameters without very specific use cases. Current we can just treat them as sub-prompts and involve them in the greedy merge of sub-prompt bags. This in my experiments will improve the atmosphere and quality a bit.
+
 # A Baseline Renderer
 
 # Examples
