@@ -258,7 +258,7 @@ with gr.Blocks(fill_height=True, css=css) as demo:
             with gr.Row():
                 retry_btn = gr.Button("🔄 Retry", variant="secondary", size="sm", min_width=60)
                 undo_btn = gr.Button("↩️ Undo", variant="secondary", size="sm", min_width=60)
-                clear_btn = gr.Button("⭐️ new_chat", variant="secondary", size="sm", min_width=60)
+                clear_btn = gr.Button("⭐️ New Chat", variant="secondary", size="sm", min_width=60)
         with gr.Column(scale=75, elem_classes='inner_parent'):
             ChatInterface(
                 fn=chat_fn,
