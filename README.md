@@ -30,6 +30,8 @@ Or, you can use the below deployment (requires 8GB Nvidia VRAM):
 
 *(Random seed is 123456)*
 
+*(If the GitHub's code block rendering is causing troubles to read long lines, click [here](https://raw.githubusercontent.com/lllyasviel/Omost/main/README.md) to read raw texts.)*
+
 ### User
 
 generate an image of the fierce battle of warriors and dinosaurs
