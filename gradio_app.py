@@ -111,7 +111,10 @@ def resize_without_crop(image, target_width, target_height):
 
 
 @torch.inference_mode()
-def chat_fn(message: str, history: list, temperature: float, top_p: float, max_new_tokens: int) -> str:
+def chat_fn(message: str, history: list, seed:int, temperature: float, top_p: float, max_new_tokens: int) -> str:
+    np.random.seed(int(seed))
+    torch.manual_seed(int(seed))
+
     conversation = [{"role": "system", "content": omost_canvas.system_prompt}]
 
     for user, assistant in history:
@@ -276,6 +279,9 @@ with gr.Blocks(fill_height=True, css=css) as demo:
                 retry_btn = gr.Button("🔄 Retry", variant="secondary", size="sm", min_width=60)
                 undo_btn = gr.Button("↩️ Undo", variant="secondary", size="sm", min_width=60)
                 clear_btn = gr.Button("⭐️ New Chat", variant="secondary", size="sm", min_width=60)
+
+            seed = gr.Number(label="Seed", value=12345, precision=0)
+
             with gr.Accordion(open=True, label='Language Model'):
                 with gr.Group():
                     with gr.Row():
@@ -300,12 +306,12 @@ with gr.Blocks(fill_height=True, css=css) as demo:
             with gr.Accordion(open=True, label='Image Diffusion Model'):
                 with gr.Group():
                     with gr.Row():
-                        num_samples = gr.Slider(label="Images", minimum=1, maximum=12, value=1, step=1)
-                        seed = gr.Number(label="Seed", value=12345, precision=0)
-                    with gr.Row():
                         image_width = gr.Slider(label="Image Width", minimum=256, maximum=2048, value=896, step=64)
                         image_height = gr.Slider(label="Image Height", minimum=256, maximum=2048, value=1152, step=64)
-                    highres_scale = gr.Slider(label="Highres Fix Scale (\"1\" is disabled)", minimum=1.0, maximum=2.0, value=1.0, step=0.01)
+
+                    with gr.Row():
+                        num_samples = gr.Slider(label="Images", minimum=1, maximum=12, value=1, step=1)
+                        highres_scale = gr.Slider(label="HR-fix Scale (disabled at \'1\')", minimum=1.0, maximum=2.0, value=1.0, step=0.01)
 
             with gr.Accordion(open=False, label='Advanced'):
                 steps = gr.Slider(label="Sampling Steps", minimum=1, maximum=100, value=25, step=1)
@@ -337,7 +343,7 @@ with gr.Blocks(fill_height=True, css=css) as demo:
                 retry_btn=retry_btn,
                 undo_btn=undo_btn,
                 clear_btn=clear_btn,
-                additional_inputs=[temperature, top_p, max_new_tokens],
+                additional_inputs=[seed, temperature, top_p, max_new_tokens],
                 examples=examples
             )
 
@@ -348,8 +354,8 @@ with gr.Blocks(fill_height=True, css=css) as demo:
             steps, cfg, highres_steps, highres_denoise, n_prompt
         ], outputs=[chatInterface.chatbot]).then(
         fn=lambda x: x, inputs=[
-            chatInterface.chatbot],
-        outputs=[chatInterface.chatbot_state])
+            chatInterface.chatbot
+        ], outputs=[chatInterface.chatbot_state])
 
 if __name__ == "__main__":
     demo.queue().launch(inbrowser=True, server_name='0.0.0.0')
