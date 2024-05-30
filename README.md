@@ -436,7 +436,7 @@ The design of sub-prompt also allows more satisfying text encoding based on gree
     sub-prompt E: 15 tokens
     sub-prompt F: 25 tokens
 
-and since every sub-prompt is promised to be self-supported to describe a thing independently, we can use greedy method to split them to bags like
+and since every sub-prompt is promised to be self-supported to describe a thing independently, we can use greedy method to merge them to bags like
 
     bag 1 {A, B, C} : 65 tokens
     bag 2 {D} : 60 tokens
