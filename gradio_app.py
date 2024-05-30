@@ -317,10 +317,6 @@ with gr.Blocks(fill_height=True, css=css) as demo:
                               value=4096,
                               label="Max New Tokens",
                               render=False),
-                ],
-                examples=[
-                    ['generate an image of a cat on a table in a room'],
-                    ['make it on fire']
                 ]
             )
 
