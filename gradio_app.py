@@ -260,28 +260,25 @@ with gr.Blocks(fill_height=True, css=css) as demo:
                 retry_btn = gr.Button("🔄 Retry", variant="secondary", size="sm", min_width=60)
                 undo_btn = gr.Button("↩️ Undo", variant="secondary", size="sm", min_width=60)
                 clear_btn = gr.Button("⭐️ New Chat", variant="secondary", size="sm", min_width=60)
-            with gr.Accordion(open=True, label='Advanced'):
+            with gr.Accordion(open=True, label='Language Model Advanced'):
                 temperature = gr.Slider(
                     minimum=0.0,
                     maximum=2.0,
                     step=0.01,
                     value=0.6,
-                    label="Temperature",
-                    render=False)
+                    label="Temperature")
                 top_p = gr.Slider(
                     minimum=0.0,
                     maximum=1.0,
                     step=0.01,
                     value=0.9,
-                    label="Top P",
-                    render=False)
+                    label="Top P")
                 max_new_tokens = gr.Slider(
                     minimum=128,
                     maximum=4096,
                     step=1,
                     value=4096,
-                    label="Max New Tokens",
-                    render=False)
+                    label="Max New Tokens")
         with gr.Column(scale=75, elem_classes='inner_parent'):
             ChatInterface(
                 fn=chat_fn,
