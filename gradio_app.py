@@ -339,8 +339,6 @@ with gr.Blocks(fill_height=True, css=css) as demo:
             )
 
     render_button.click(
-        fn=lambda: gr.update(visible=False),
-        outputs=[render_button]).then(
         fn=diffusion_fn, inputs=[
             chatInterface.chatbot, canvas_state,
             num_samples, seed, image_width, image_height, highres_scale,
