@@ -442,7 +442,7 @@ and since every sub-prompt is promised to be self-supported to describe a thing 
     bag 2 {D} : 60 tokens
     bag 1 {E, F} : 40 tokens
 
-where each bad is less than 75 tokens and can be encoded by any clip in one pass (and then concat them). 
+where each bag is less than 75 tokens and can be encoded by any clip in one pass (and then concat them). 
 
 Encoding texts in this way will make sure that text-encoder will never make semantic truncation mistakes. 
 
