@@ -60,13 +60,6 @@ import lib_omost.canvas as omost_canvas
 #
 # memory_management.unload_all_models([text_encoder, text_encoder_2, vae, unet])
 #
-# # This negative prompt is suggested by RealVisXL_V4 author
-# # See also https://huggingface.co/SG161222/RealVisXL_V4.0
-# # Note that in A111's normalization, a full "(full sentence)" is equal to "full sentence"
-# # so we can just remove SG161222's braces
-#
-# default_negative = 'face asymmetry, eyes asymmetry, deformed eyes, open mouth'
-#
 # # LLM
 #
 # # model_name = 'lllyasviel/omost-phi-3-mini-128k-8bits'
@@ -113,6 +106,7 @@ def resize_without_crop(image, target_width, target_height):
 
 
 # with torch.inference_mode():
+#     default_negative = 'face asymmetry, eyes asymmetry, deformed eyes, open mouth'
 #     example_response = open('./example_outputs.md', 'rt', encoding='utf-8').read()
 #     example_response = '```python\n' + example_response + '\n```'
 #
