@@ -287,7 +287,7 @@ with gr.Blocks(fill_height=True, css=css) as demo:
             with gr.Accordion(open=True, label='Image Diffusion Model'):
                 with gr.Group():
                     with gr.Row():
-                        num_samples = gr.Slider(label="Images", minimum=1, maximum=12, value=2, step=1)
+                        num_samples = gr.Slider(label="Images", minimum=1, maximum=12, value=1, step=1)
                         seed = gr.Number(label="Seed", value=12345, precision=0)
                     with gr.Row():
                         image_width = gr.Slider(label="Image Width", minimum=256, maximum=2048, value=896, step=64)
