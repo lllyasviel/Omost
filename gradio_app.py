@@ -251,35 +251,43 @@ code {white-space: pre-wrap !important;}
 '''
 
 with gr.Blocks(fill_height=True, css=css) as demo:
-    ChatInterface(
-        fn=chat_fn,
-        chatbot=gr.Chatbot(label='Omost', scale=1, bubble_full_width=True, render=False),
-        additional_inputs_accordion=gr.Accordion(label="⚙️ Parameters", open=False, render=False),
-        additional_inputs=[
+    with gr.Row():
+        with gr.Column(scale=25):
             gr.Slider(minimum=0.0,
                       maximum=2.0,
                       step=0.01,
                       value=0.6,
-                      label="Temperature",
-                      render=False),
-            gr.Slider(minimum=0.0,
-                      maximum=1.0,
-                      step=0.01,
-                      value=0.9,
-                      label="Top P",
-                      render=False),
-            gr.Slider(minimum=128,
-                      maximum=4096,
-                      step=1,
-                      value=4096,
-                      label="Max New Tokens",
-                      render=False),
-        ],
-        examples=[
-            ['generate an image of a cat on a table in a room'],
-            ['make it on fire']
-        ]
-    )
+                      label="Temperature")
+        with gr.Column(scale=75):
+            ChatInterface(
+                fn=chat_fn,
+                chatbot=gr.Chatbot(label='Omost', scale=1, bubble_full_width=True, render=False),
+                additional_inputs_accordion=gr.Accordion(label="⚙️ Parameters", open=False, render=False),
+                additional_inputs=[
+                    gr.Slider(minimum=0.0,
+                              maximum=2.0,
+                              step=0.01,
+                              value=0.6,
+                              label="Temperature",
+                              render=False),
+                    gr.Slider(minimum=0.0,
+                              maximum=1.0,
+                              step=0.01,
+                              value=0.9,
+                              label="Top P",
+                              render=False),
+                    gr.Slider(minimum=128,
+                              maximum=4096,
+                              step=1,
+                              value=4096,
+                              label="Max New Tokens",
+                              render=False),
+                ],
+                examples=[
+                    ['generate an image of a cat on a table in a room'],
+                    ['make it on fire']
+                ]
+            )
 
 if __name__ == "__main__":
     demo.launch(inbrowser=True)
