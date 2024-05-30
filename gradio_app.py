@@ -266,6 +266,7 @@ code {white-space: pre-wrap !important;}
 .outer_parent {flex: 1;}
 .inner_parent {flex: 1;}
 footer {display: none !important; visibility: hidden !important;}
+.translucent {display: none !important; visibility: hidden !important;}
 '''
 
 with gr.Blocks(fill_height=True, css=css) as demo:
@@ -317,7 +318,7 @@ with gr.Blocks(fill_height=True, css=css) as demo:
 
             examples = gr.Dataset(
                 samples=[
-                    ['generate an image of the fierce battle of warriors and dragons'],
+                    ['generate an image of the fierce battle of warriors and a dragon'],
                     ['burn everything in this image with dark blue flames']
                 ],
                 components=[gr.Textbox(visible=False)],
