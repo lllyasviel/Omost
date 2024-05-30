@@ -98,9 +98,6 @@ class ChatInterface(Blocks):
         self.is_generator = inspect.isgeneratorfunction(
             self.fn
         ) or inspect.isasyncgenfunction(self.fn)
-        self.buttons: list[Button | None] = []
-
-        self.examples = examples
 
         if additional_inputs:
             if not isinstance(additional_inputs, list):
@@ -148,9 +145,7 @@ class ChatInterface(Blocks):
 
             self.chatbot = Chatbot(label=chatbot_title, scale=1, bubble_full_width=True)
 
-            with Row():
-                for btn in [retry_btn, undo_btn, clear_btn]:
-                    self.buttons.append(btn)
+            self.buttons = [retry_btn, undo_btn, clear_btn]
 
             with Group():
                 with Row():
