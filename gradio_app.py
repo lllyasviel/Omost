@@ -284,13 +284,35 @@ with gr.Blocks(fill_height=True, css=css) as demo:
                     step=1,
                     value=4096,
                     label="Max New Tokens")
+            with gr.Accordion(open=True, label='Image Diffusion Model Advanced'):
+                temperature1 = gr.Slider(
+                    minimum=0.0,
+                    maximum=2.0,
+                    step=0.01,
+                    value=0.6,
+                    label="Temperature")
+                top_p1 = gr.Slider(
+                    minimum=0.0,
+                    maximum=1.0,
+                    step=0.01,
+                    value=0.9,
+                    label="Top P")
+                max_new_tokens1 = gr.Slider(
+                    minimum=128,
+                    maximum=4096,
+                    step=1,
+                    value=4096,
+                    label="Max New Tokens")
+
+            gr.Button("Render the Image!", size='lg', variant="primary")
+
             examples = gr.Dataset(
                 samples=[
                     ['generate an image of a cat on a table in a room'],
                     ['make it on fire']
                 ],
                 components=[gr.Textbox(visible=False)],
-                label='Try ...'
+                label='Quick Prompts'
             )
         with gr.Column(scale=75, elem_classes='inner_parent'):
             chatInterface = ChatInterface(
