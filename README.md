@@ -2,6 +2,8 @@
 
 Your image is almost there!
 
+# Get Started
+
 Below script will run the text-conditioned relighting model:
 
     git clone https://github.com/lllyasviel/Omost.git
@@ -11,3 +13,13 @@ Below script will run the text-conditioned relighting model:
     pip install torch torchvision --index-url https://download.pytorch.org/whl/cu121
     pip install -r requirements.txt
     python gradio_app.py
+
+# Screenshots
+
+# Symbols
+
+# Baseline Implementation
+
+# Examples
+
+# Model Notes
