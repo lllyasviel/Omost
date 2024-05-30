@@ -421,7 +421,34 @@ The `set_global_description` annotate entire image, while `add_local_description
 
 ## Parameter: description and detailed_descriptions
 
+Let us introduce a concept called "sub-prompt". If a prompt (1) is less than 75 tokens, and (2) is self-supported to describe a thing without relying on other prompts, we call it a "sub-prompt".
 
+The `description` is a sub-prompt, and the `detailed_descriptions` is a list of sub-prompts.
+
+Note that each sub-prompt is strictly less than 75 tokens (and typically less than 40 tokens), you can safely encode them with any clip without worrying the truncation position affects the semantics.
+
+The design of sub-prompt also allows more satisfying text encoding based on greedy merge. For example, if you have 
+
+    sub-prompt A: 25 tokens
+    sub-prompt B: 35 tokens
+    sub-prompt C: 5 tokens
+    sub-prompt D: 60 tokens
+    sub-prompt E: 15 tokens
+    sub-prompt F: 25 tokens
+
+and since every sub-prompt is promised to be self-supported to describe a thing independently, we can use greedy method to split them to bags like
+
+    bag 1 {A, B, C} : 65 tokens
+    bag 2 {D} : 60 tokens
+    bag 1 {E, F} : 40 tokens
+
+where each bad is less than 75 tokens and can be encoded by any clip in one pass (and then concat them). 
+
+Encoding texts in this way will make sure that text-encoder will never make semantic truncation mistakes. 
+
+One may ask - if all sub-prompts are less than 75 tokens with independent semantics, why not just encode them without merge and then concat? This is mainly because we want the text embedding to be more coherent. For example, lets say sub-prompt A is "a man" while sub-prompt B is "handsome, professional", then merging them before encoding will give you a more mixed text embedding concept with coherent features of a handsome professional man. 
+
+All Omost LLMs are trained to give strictly sub-prompts. You can make use of this definition to design lossless text encoding methods.
 
 # A Baseline Renderer
 
