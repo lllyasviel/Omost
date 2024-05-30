@@ -29,3 +29,22 @@ Below script will run the text-conditioned relighting model:
 # Examples
 
 # Model Notes
+
+Currently, we provide 3 models (you can get them by adding the prefix `https://huggingface.co/lllyasviel/` to the below names):
+
+    omost-llama-3-8b
+    omost-dolphin-2.9-llama3-8b
+    omost-phi-3-mini-128k
+
+And their quant versions:
+
+    omost-llama-3-8b-4bits
+    omost-dolphin-2.9-llama3-8b-4bits
+    omost-phi-3-mini-128k-4bits
+
+Some notes:
+
+1. The recommended quant for `llama-3-8b` is 4bits, and for `phi-3-mini-128k` (3.8B) is 8 bits. They all fit in 8GB VRAM without offloads. However, quant `phi-3-mini-128k` into 4 bits is not recommended since I noticed some obvious performance degradation. The 4bit inference of `phi-3-mini-128k` should be viewed as a last method in extreme cases when you really do not have more capable GPUs.
+2. My user study shows that `omost-llama-3-8b-4bits` > `omost-dolphin-2.9-llama3-8b-4bits` > `omost-phi-3-mini-128k-4bits`. So in most cases one should just use `omost-llama-3-8b-4bits`.
+3. The `omost-llama-3-8b-4bits` and `omost-phi-3-mini-128k-4bits` are trained with filtered safe data without NSFW or inappropriate contents. The `omost-dolphin-2.9-llama3-8b-4bits` is trained with all data without filtering.
+4. Note that the filtering in 3 is 
