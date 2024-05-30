@@ -22,7 +22,7 @@ Or, you can use the below deployment (requires 8GB Nvidia VRAM):
     pip install -r requirements.txt
     python gradio_app.py
 
-(Note that quant LLM requires `bitsandbytes` and some 9XX or 10XX or 20XX GPUs may have trouble in running it. If that happens, just use our official huggingface space.)
+(Note that quant LLM requires `bitsandbytes` - some 9XX or 10XX or 20XX GPUs may have trouble in running it. If that happens, just use our official huggingface space.)
 
 # Screenshots
 
