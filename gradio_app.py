@@ -148,6 +148,13 @@ def chat_fn(message: str, history: list, temperature: float, top_p: float, max_n
         # print(outputs)
         yield "".join(outputs)
 
+    return
+
+
+@torch.inference_mode()
+def post_chat(chatbot):
+    return None
+
 
 @torch.inference_mode()
 def diffusion_fn(chatbot, num_samples, seed, image_width, image_height,
@@ -312,8 +319,12 @@ with gr.Blocks(fill_height=True, css=css) as demo:
                 label='Quick Prompts'
             )
         with gr.Column(scale=75, elem_classes='inner_parent'):
+            canvas_state = gr.State(None)
             chatInterface = ChatInterface(
                 fn=chat_fn,
+                post_fn=post_chat,
+                post_fn_inputs=[],
+                post_fn_outputs=[canvas_state],
                 chatbot_title='Omost',
                 retry_btn=retry_btn,
                 undo_btn=undo_btn,

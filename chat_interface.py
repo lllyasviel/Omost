@@ -53,7 +53,10 @@ class ChatInterface(Blocks):
     def __init__(
         self,
         fn: Callable,
+        post_fn: Callable,
         *,
+        post_fn_inputs: list = None,
+        post_fn_outputs: list = None,
         multimodal: bool = False,
         chatbot_title: str = 'Chat Bot',
         textbox: Textbox | MultimodalTextbox | None = None,
@@ -89,6 +92,12 @@ class ChatInterface(Blocks):
             fill_height=fill_height,
             delete_cache=delete_cache,
         )
+
+        if post_fn_outputs is None:
+            post_fn_outputs = []
+        if post_fn_inputs is None:
+            post_fn_inputs = []
+
         self.multimodal = multimodal
         self.concurrency_limit = concurrency_limit
         self.fn = fn
