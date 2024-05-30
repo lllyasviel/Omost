@@ -26,6 +26,13 @@ Or, you can use the below deployment (requires 8GB Nvidia VRAM):
 
 # Screenshots
 
+<style>
+  code {
+    white-space : pre-wrap !important;
+    word-break: break-word;
+  }
+</style>
+
 *(Below is a raw transcript from default model)*
 
 *(Random seed is 123456)*
