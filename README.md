@@ -52,3 +52,4 @@ Some notes:
 6. A 8k context length can do about 5 to 6 rounds of conversational editing. It is highly recommended to use the UI to modify your message and respond again (this can be done infinite times) if you plan to conduct a massive amount of editing.
 7. All models are fully trained with our H100 clusters at precision fp16 without any tricks like quant or Q-LoRA etc.
 8. You must also follow the licenses of Llama-3 and Phi-3.
+9. You can request us to train on other LLMs if reasonable and necessary.
