@@ -36,7 +36,7 @@ Or, you can use the below deployment (requires 8GB Nvidia VRAM):
 
 generate an image of the fierce battle of warriors and dinosaurs
 
-### Assistance (model response)
+### Assistant (model response)
 
 ```python
 # Initialize the canvas
@@ -173,7 +173,7 @@ canvas.add_local_description(
 
 add some meteorites to the picture
 
-### Assistance (model response)
+### Assistant (model response)
 
 ```python
 # Initialize the canvas
