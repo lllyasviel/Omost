@@ -332,7 +332,7 @@ with gr.Blocks(fill_height=True, css=css) as demo:
             )
         with gr.Column(scale=75, elem_classes='inner_parent'):
             canvas_state = gr.State(None)
-            chatbot = gr.Chatbot(label='Omost', scale=1, bubble_full_width=True, render=False)
+            chatbot = gr.Chatbot(label='Omost', scale=1, show_copy_button=True, layout="panel", render=False)
             chatInterface = ChatInterface(
                 fn=chat_fn,
                 post_fn=post_chat,
