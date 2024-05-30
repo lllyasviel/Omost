@@ -512,7 +512,7 @@ One may argue that why this is necessary - why not just let the LLMs to learn pi
 3. I have also tried adding some special tokens to represent spatial locations and also train the embedding layers. But that model is very difficult to train and debug. Also, this token-based method needs many hyperparameter tuning everytime we change the LLM - for example when changing from Llama3 to Phi, if we use this method, we need to design training parameters again.
 4. The number 9\*9\*9=729 is not really a small number from the perspective of bounding box proposals. This can also be called ROI (region of interest) and some old semantic segmentation tech uses (RPN) Region Proposal Network to produce a similar number (<1000) of regions.
 5. Most region-guided diffusion methods are coarse-level methods (like multi-diffusion and attention couple and gligen), and they do not need pixel-perfect regions.
-6. These are very personal results from me - if you are working on some similar multi-modal LLM research, using pixel indices is completely okay, worth trying, and probably other training methods can also achieve robust system.
+6. These are very personal results from me - if you are working on some similar multi-modal LLM research, using pixel indices is completely okay, worth trying, and probably other training methods can also achieve a robust system.
 
 # A Baseline Renderer
 
