@@ -338,12 +338,17 @@ with gr.Blocks(fill_height=True, css=css) as demo:
                 examples=examples
             )
 
-    render_button.click(fn=diffusion_fn, inputs=[
-        chatInterface.chatbot, canvas_state,
-        num_samples, seed, image_width, image_height, highres_scale,
-        steps, cfg, highres_steps, highres_denoise, n_prompt
-    ], outputs=[chatInterface.chatbot]).then(
-        fn=lambda x: x, inputs=[chatInterface.chatbot], outputs=[chatInterface.chatbot_state])
+    render_button.click(
+        fn=lambda: gr.update(visible=False), 
+        outputs=[render_button]).then(
+        fn=diffusion_fn, inputs=[
+            chatInterface.chatbot, canvas_state,
+            num_samples, seed, image_width, image_height, highres_scale,
+            steps, cfg, highres_steps, highres_denoise, n_prompt
+        ], outputs=[chatInterface.chatbot]).then(
+        fn=lambda x: x, inputs=[
+            chatInterface.chatbot],
+        outputs=[chatInterface.chatbot_state])
 
 if __name__ == "__main__":
     demo.queue().launch(inbrowser=True)
