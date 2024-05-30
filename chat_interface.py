@@ -624,7 +624,7 @@ class ChatInterface(Blocks):
             )
             history = history[:-remove_input]
         else:
-            while True:
+            while history:
                 deleted_a, deleted_b = history[-1]
                 history = history[:-1]
                 if isinstance(deleted_a, str) and isinstance(deleted_b, str):

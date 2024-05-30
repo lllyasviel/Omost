@@ -159,10 +159,11 @@ def post_chat(history):
     canvas_outputs = None
 
     try:
-        history = [(user, assistant) for user, assistant in history if isinstance(user, str) and isinstance(assistant, str)]
-        last_assistant = history[-1][1] if len(history) > 0 else None
-        canvas = omost_canvas.Canvas.from_bot_response(last_assistant)
-        canvas_outputs = canvas.process()
+        if history:
+            history = [(user, assistant) for user, assistant in history if isinstance(user, str) and isinstance(assistant, str)]
+            last_assistant = history[-1][1] if len(history) > 0 else None
+            canvas = omost_canvas.Canvas.from_bot_response(last_assistant)
+            canvas_outputs = canvas.process()
     except Exception as e:
         print('Last assistant response is not valid canvas:', e)
 
@@ -281,9 +282,9 @@ with gr.Blocks(
     with gr.Row(elem_classes='outer_parent'):
         with gr.Column(scale=25):
             with gr.Row():
-                retry_btn = gr.Button("🔄 Retry", variant="secondary", size="sm", min_width=60)
-                undo_btn = gr.Button("↩️ Undo", variant="secondary", size="sm", min_width=60)
-                clear_btn = gr.Button("⭐️ New Chat", variant="secondary", size="sm", min_width=60)
+                retry_btn = gr.Button("Retry", variant="secondary", size="sm", min_width=60, visible=False)
+                undo_btn = gr.Button("✏️️ Edit Last Message", variant="secondary", size="sm", min_width=60)
+                clear_btn = gr.Button("➕ New Chat", variant="secondary", size="sm", min_width=60)
 
             seed = gr.Number(label="Random Seed", value=12345, precision=0)
 
