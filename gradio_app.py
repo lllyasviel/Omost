@@ -167,7 +167,7 @@ def post_chat(history):
     except Exception as e:
         print('Last assistant response is not valid canvas:', e)
 
-    return canvas_outputs, gr.update(visible=canvas_outputs is not None), gr.update(interactive=True)
+    return canvas_outputs, gr.update(visible=canvas_outputs is not None), gr.update(interactive=len(history) > 0)
 
 
 @torch.inference_mode()
