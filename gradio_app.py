@@ -329,7 +329,7 @@ with gr.Blocks(fill_height=True, css=css) as demo:
                 fn=chat_fn,
                 post_fn=post_chat,
                 post_fn_inputs=[],
-                post_fn_outputs=[canvas_state],
+                post_fn_outputs=[canvas_state, render_button],
                 chatbot_title='Omost',
                 retry_btn=retry_btn,
                 undo_btn=undo_btn,
@@ -343,7 +343,7 @@ with gr.Blocks(fill_height=True, css=css) as demo:
         num_samples, seed, image_width, image_height, highres_scale,
         steps, cfg, highres_steps, highres_denoise, n_prompt
     ], outputs=[chatInterface.chatbot]).then(
-        fn=lambda x: x, inputs=[chatInterface.chatbot], outputs=[chatInterface.chatbot_state, render_button])
+        fn=lambda x: x, inputs=[chatInterface.chatbot], outputs=[chatInterface.chatbot_state])
 
 if __name__ == "__main__":
     demo.queue().launch(inbrowser=True)
