@@ -311,7 +311,7 @@ with gr.Blocks(fill_height=True, css=css) as demo:
 
                     with gr.Row():
                         num_samples = gr.Slider(label="Images", minimum=1, maximum=12, value=1, step=1)
-                        highres_scale = gr.Slider(label="HR-fix Scale (disabled at \'1\')", minimum=1.0, maximum=2.0, value=1.0, step=0.01)
+                        highres_scale = gr.Slider(label="HR-fix Scale (1 is disabled)", minimum=1.0, maximum=2.0, value=1.0, step=0.01)
 
             with gr.Accordion(open=False, label='Advanced'):
                 steps = gr.Slider(label="Sampling Steps", minimum=1, maximum=100, value=25, step=1)
