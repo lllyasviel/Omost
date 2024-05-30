@@ -10,7 +10,9 @@ Currently, we provide 3 pretrained LLM models based on Llama3 and Phi3 (see also
 
 # Get Started
 
-Below script will run the text-conditioned relighting model:
+You can just use the [official HuggingFace space](https://huggingface.co/spaces/lllyasviel/Omost).
+
+Or, you can use the below deployment (requires 8GB Nvidia VRAM):
 
     git clone https://github.com/lllyasviel/Omost.git
     cd Omost
@@ -19,6 +21,8 @@ Below script will run the text-conditioned relighting model:
     pip install torch torchvision --index-url https://download.pytorch.org/whl/cu121
     pip install -r requirements.txt
     python gradio_app.py
+
+(Note that quant LLM requires `bitsandbytes` and some 9XX or 10XX or 20XX GPUs may have trouble in running it. If that happens, just use our official huggingface space.)
 
 # Screenshots
 
