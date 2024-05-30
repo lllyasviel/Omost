@@ -8,6 +8,10 @@ import lib_omost.memory_management as memory_management
 import torch
 import numpy as np
 import gradio as gr
+import tempfile
+
+gradio_temp_dir = os.path.join(tempfile.gettempdir(), 'gradio')
+os.makedirs(gradio_temp_dir, exist_ok=True)
 
 from threading import Thread
 
