@@ -167,7 +167,7 @@ def post_chat(history):
     except Exception as e:
         print('Last assistant response is not valid canvas:', e)
 
-    return canvas_outputs, gr.update(visible=canvas_outputs is not None)
+    return canvas_outputs, gr.update(visible=canvas_outputs is not None), gr.update(interactive=True)
 
 
 @torch.inference_mode()
@@ -282,9 +282,9 @@ with gr.Blocks(
     with gr.Row(elem_classes='outer_parent'):
         with gr.Column(scale=25):
             with gr.Row():
-                retry_btn = gr.Button("Retry", variant="secondary", size="sm", min_width=60, visible=False)
-                undo_btn = gr.Button("✏️️ Edit Last Message", variant="secondary", size="sm", min_width=60)
                 clear_btn = gr.Button("➕ New Chat", variant="secondary", size="sm", min_width=60)
+                retry_btn = gr.Button("Retry", variant="secondary", size="sm", min_width=60, visible=False)
+                undo_btn = gr.Button("✏️️ Edit Last Message", variant="secondary", size="sm", min_width=60, interactive=False)
 
             seed = gr.Number(label="Random Seed", value=12345, precision=0)
 
@@ -342,7 +342,7 @@ with gr.Blocks(
             chatInterface = ChatInterface(
                 fn=chat_fn,
                 post_fn=post_chat,
-                post_fn_kwargs=dict(inputs=[chatbot], outputs=[canvas_state, render_button]),
+                post_fn_kwargs=dict(inputs=[chatbot], outputs=[canvas_state, render_button, undo_btn]),
                 pre_fn=lambda: gr.update(visible=False),
                 pre_fn_kwargs=dict(outputs=[render_button]),
                 chatbot=chatbot,
