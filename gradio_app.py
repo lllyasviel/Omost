@@ -156,11 +156,11 @@ def chat_fn(message: str, history: list, seed:int, temperature: float, top_p: fl
 
 @torch.inference_mode()
 def post_chat(history):
-    history = [(user, assistant) for user, assistant in history if isinstance(user, str) and isinstance(assistant, str)]
-    last_assistant = history[-1][1]
     canvas_outputs = None
 
     try:
+        history = [(user, assistant) for user, assistant in history if isinstance(user, str) and isinstance(assistant, str)]
+        last_assistant = history[-1][1] if len(history) > 0 else None
         canvas = omost_canvas.Canvas.from_bot_response(last_assistant)
         canvas_outputs = canvas.process()
     except Exception as e:
