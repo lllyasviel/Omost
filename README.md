@@ -344,6 +344,69 @@ canvas.add_local_description(
 
 # Symbols
 
+All Omost LLMs are trained to obey the following symbols
+
+```python
+class Canvas:
+    def set_global_description(
+            self, 
+            description: str, 
+            detailed_descriptions: list[str], 
+            tags: str, 
+            HTML_web_color_name: str
+    ):
+        pass
+
+    def add_local_description(
+            self, location: str, 
+            offset: str, 
+            area: str, 
+            distance_to_viewer: float, 
+            description: str, 
+            detailed_descriptions: list[str], 
+            tags: str, 
+            atmosphere: str, 
+            style: str, 
+            quality_meta: str, 
+            HTML_web_color_name: str
+    ):
+        assert location in [
+            "in the center", 
+            "on the left", 
+            "on the right", 
+            "on the top", 
+            "on the bottom", 
+            "on the top-left", 
+            "on the top-right", 
+            "on the bottom-left", 
+            "on the bottom-right"
+        ]
+        assert offset in [
+            "no offset", 
+            "slightly to the left", 
+            "slightly to the right", 
+            "slightly to the upper", 
+            "slightly to the lower", 
+            "slightly to the upper-left", 
+            "slightly to the upper-right", 
+            "slightly to the lower-left", 
+            "slightly to the lower-right"
+        ]
+        assert area in [
+            "a small square area", 
+            "a small vertical area", 
+            "a small horizontal area", 
+            "a medium-sized square area", 
+            "a medium-sized vertical area", 
+            "a medium-sized horizontal area", 
+            "a large square area", 
+            "a large vertical area", 
+            "a large horizontal area"
+        ]
+        assert distance_to_viewer > 0
+        pass
+```
+
 # Baseline Implementation
 
 # Examples
