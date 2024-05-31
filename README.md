@@ -28,9 +28,18 @@ Or, you can use the below deployment (requires 8GB Nvidia VRAM):
 
 # Screenshots
 
+a ragged man wearing a tattered jacket in the nineteenth century：
+
 ![image](https://github.com/lllyasviel/Omost/assets/19834515/6acc5eac-87e4-428b-a209-1d4b947c590c)
 
 ![image](https://github.com/lllyasviel/Omost/assets/19834515/c60dadfc-6e82-4582-9561-8389260714c0)
+
+the greatest escape after the apocalypse, the hope of all humanity：
+
+![image](https://github.com/lllyasviel/Omost/assets/19834515/997d41ab-ea52-4036-898b-47c8b863acf4)
+
+![image](https://github.com/lllyasviel/Omost/assets/19834515/c6653558-bfd8-40d9-95fb-c5ec1b68c289)
+
 
 
 # Examples
