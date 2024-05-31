@@ -618,6 +618,9 @@ Then we have three prompts "two cats", "a black cat", "a white cat", and we have
 
 Then we can draw this attention score table:
 
+![image](https://github.com/lllyasviel/Omost/assets/19834515/a77936b3-050e-4894-9252-476713144f6c)
+
+
 ### Prompt Prefix Tree
 
 123
