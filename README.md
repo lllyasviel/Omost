@@ -608,7 +608,7 @@ As of 2024, if we want to achieve a region guided diffusion system, some possibl
 
 In this repo I wrote a baseline formulation based on (3). I consider this parameter-free formulation as a very standard baseline implementation that will almost introduce zero style offsets or quality degradation. In the future we may consider training some parametrized methods for Omost.
 
-Lets begion with an image with 2\*2=4 pixels:
+Lets consider an extremely simplified image with only 2\*2=4 pixels:
 
 ### Prompt Prefix Tree
 
