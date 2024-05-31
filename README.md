@@ -58,18 +58,11 @@ a funny cartoon batman fights joker:
 
 ![image](https://github.com/lllyasviel/Omost/assets/19834515/f3e6e8e8-2e08-4e5e-a109-a8054461e71f)
 
-# Examples (with Conversational Editing)
+# Examples (Seed 12345, with Conversational Editing)
 
 *(Below is a raw transcript from default model)*
 
-*(Random seed is 123456)*
-
 *(If the GitHub's code block rendering is causing troubles to read long lines, click [here](https://raw.githubusercontent.com/lllyasviel/Omost/main/README.md) to read raw texts.)*
-
-<details>
-<summary>Screenshots</summary>
-<img src="https://github.com/lllyasviel/Omost/assets/19834515/0b3479c8-a157-4c4e-b865-d32355da6bc6"  alt=""/>
-</details>
 
 ### User
 
