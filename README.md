@@ -422,7 +422,7 @@ The `set_global_description` annotate entire image, while `add_local_description
 
 ## Parameter: description and detailed_descriptions
 
-Let us introduce a concept called "sub-prompt". If a prompt (1) is less than 75 tokens, and (2) is self-supported to describe a thing without relying on other prompts, we call it a "sub-prompt".
+Let us introduce a concept called "sub-prompt". If a prompt is less than 75 tokens, and is self-supported to describe a thing without relying on other prompts, we call it a "sub-prompt".
 
 The `description` is a sub-prompt, and the `detailed_descriptions` is a list of sub-prompts.
 
