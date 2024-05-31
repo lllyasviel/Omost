@@ -298,7 +298,9 @@ canvas.add_local_description(
 
 ![image](https://github.com/lllyasviel/Omost/assets/19834515/8dd6a49b-f32c-432b-9b31-ef91312b9cea)
 
-![image](https://github.com/lllyasviel/Omost/assets/19834515/8d6f375d-4fc6-4d51-a8bd-36980eb9f34e)
+![image](https://github.com/lllyasviel/Omost/assets/19834515/23d8b0fb-b504-442f-a449-48a7bf613bb4)
+
+![image](https://github.com/lllyasviel/Omost/assets/19834515/39434e27-aaf9-441f-a76a-3850ff480c5f)
 
 # Symbols
 
