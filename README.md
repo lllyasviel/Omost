@@ -60,7 +60,7 @@ a funny cartoon batman fights joker:
 
 ![image](https://github.com/lllyasviel/Omost/assets/19834515/f3e6e8e8-2e08-4e5e-a109-a8054461e71f)
 
-# Examples (with Conversational Editing)
+# Example Transcripts (with Conversational Editing)
 
 *(Below is a raw transcript from default model, with random seed 123456)*
 
