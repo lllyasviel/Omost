@@ -46,9 +46,13 @@ jurassic dinosaur battle：
 
 ![image](https://github.com/lllyasviel/Omost/assets/19834515/f4b39798-488d-429c-bf96-27a7da6f91f7)
 
+the supreme ruler with endless magic on a gothic throne, with undead armies kneeling:
 
+![image](https://github.com/lllyasviel/Omost/assets/19834515/336b7f94-0f8e-425a-b541-6e8cd5642a2e)
 
-# Examples
+![image](https://github.com/lllyasviel/Omost/assets/19834515/9de68d20-0c01-4cee-b656-04d59cbdc695)
+
+# Examples (with Conversational Editing)
 
 *(Below is a raw transcript from default model)*
 
