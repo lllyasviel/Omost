@@ -626,7 +626,7 @@ This manipulation directly modify attention scores and compute all prompts condi
 
 ### Prompt Prefix Tree
 
-123
+In this repo, I also included another trick that I find out to improve prompt understanding a lot. Lets call it a Prompt Prefix Tree. The motivation is that, since now all our prompts are sub-prompts that can be merged arbitrarily (recall that all sub-prompts are strictly less than 75 tokens and typically less than 40 tokens, describe independent concepts, and can be arbitrarily merged as common prompts for clip to encode). 
 
 # Model Notes
 
