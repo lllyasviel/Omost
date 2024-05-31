@@ -26,7 +26,7 @@ Or, you can use the below deployment (requires 8GB Nvidia VRAM):
 
 (Note that quant LLM requires `bitsandbytes` - some 9XX or 10XX or 20XX GPUs may have trouble in running it. If that happens, just use our official huggingface space.)
 
-# Screenshots
+# Screenshots (Random Seed 12345)
 
 a ragged man wearing a tattered jacket in the nineteenth century：
 
@@ -51,6 +51,12 @@ the supreme ruler with endless magic on a gothic throne, with undead armies knee
 ![image](https://github.com/lllyasviel/Omost/assets/19834515/336b7f94-0f8e-425a-b541-6e8cd5642a2e)
 
 ![image](https://github.com/lllyasviel/Omost/assets/19834515/9de68d20-0c01-4cee-b656-04d59cbdc695)
+
+a funny cartoon batman fights joker:
+
+![image](https://github.com/lllyasviel/Omost/assets/19834515/dc751ded-f0f7-4312-8cd2-2a3aced15a60)
+
+![image](https://github.com/lllyasviel/Omost/assets/19834515/f3e6e8e8-2e08-4e5e-a109-a8054461e71f)
 
 # Examples (with Conversational Editing)
 
