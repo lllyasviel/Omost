@@ -632,7 +632,13 @@ For example below is a tree structure of global/local overall/detailed descripti
 
 ![image](https://github.com/lllyasviel/Omost/assets/19834515/f86abbc3-b336-4aad-b8b4-b004fbc0bca6)
 
+The idea is that, since all sub-prompts can be merged arbitrarily, we can use the paths in this tree graph as prompts.
+
+For example the below path will give a prompt "A cat and a dog. The cat on sofa."
+
 ![image](https://github.com/lllyasviel/Omost/assets/19834515/5e829df0-94fd-48a7-8d8c-08dbdff76200)
+
+Note that we can use this together with greedy subprompt bag merging when a path exceed 75 tokens. And, if a path has remaining place to contain more subprompts, the greedy subprompt bag merging will also take care of it. And again, since all sub prompts describe independent concepts, the greedy subprompt bag merging never makes semantic truncation mistakes. So satisfying!
 
 # Model Notes
 
