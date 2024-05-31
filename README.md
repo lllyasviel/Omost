@@ -610,7 +610,11 @@ In this repo I wrote a baseline formulation based on (3). I consider this parame
 
 Lets consider an extremely simplified image with only 2\*2=4 pixels:
 
+![image](https://github.com/lllyasviel/Omost/assets/19834515/00f97ad6-202b-4a39-9091-da6d76b0aacb)
+
 Then we have three prompts "two cats", "a black cat", "a white cat", and we have their masks:
+
+![image](https://github.com/lllyasviel/Omost/assets/19834515/f9f5e87c-5f82-41fe-8a49-580d3eb6f2be)
 
 Then we can draw this attention score table:
 
