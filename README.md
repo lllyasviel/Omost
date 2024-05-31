@@ -628,6 +628,12 @@ This manipulation directly modify attention scores and compute all prompts condi
 
 In this repo, I also included another trick that I find out to improve prompt understanding a lot. Lets call it a Prompt Prefix Tree. The motivation is that, since now that all our prompts are sub-prompts that can be merged arbitrarily (recall that all sub-prompts are strictly less than 75 tokens and typically less than 40 tokens, describe independent concepts, and can be arbitrarily merged as common prompts for clip to encode), finding a better method to merge those sub-prompts may improve the results and prompt interpretation.
 
+For example below is a tree structure of global/local overall/detailed descriptions.
+
+![image](https://github.com/lllyasviel/Omost/assets/19834515/f86abbc3-b336-4aad-b8b4-b004fbc0bca6)
+
+![image](https://github.com/lllyasviel/Omost/assets/19834515/5e829df0-94fd-48a7-8d8c-08dbdff76200)
+
 # Model Notes
 
 Currently, we provide 3 models (you can get them by adding the prefix `https://huggingface.co/lllyasviel/` to the below names):
