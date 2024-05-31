@@ -1,7 +1,7 @@
 import os
 
 os.environ['HF_HOME'] = os.path.join(os.path.dirname(__file__), 'hf_download')
-HF_TOKEN = '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'  # Remember to invalid this token when public repo
+HF_TOKEN = None
 
 import lib_omost.memory_management as memory_management
 import uuid
