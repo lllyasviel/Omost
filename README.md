@@ -632,3 +632,25 @@ Some notes:
 8. All models are fully trained with our H100 clusters at precision fp16 without any tricks like quant or Q-LoRA etc. The optimizer is Adam without any tricks.
 9. You must also follow the licenses of Llama-3 and Phi-3.
 10. You can request us to train on other LLMs if reasonable and necessary.
+
+# Cite
+
+    @Misc{omost,
+      author = {Omost Team},
+      title  = {Omost GitHub Page},
+      year   = {2024},
+    }
+
+# Related Work
+
+Also read ...
+
+[DOCCI: Descriptions of Connected and Contrasting Images](https://google.github.io/docci/)
+
+[(RPG-DiffusionMaster) Mastering Text-to-Image Diffusion: Recaptioning, Planning, and Generating with Multimodal LLMs](https://github.com/YangLing0818/RPG-DiffusionMaster)
+
+[MultiDiffusion: Fusing Diffusion Paths for Controlled Image Generation](https://multidiffusion.github.io/)
+
+[sd-webui-regional-prompter](https://github.com/hako-mikan/sd-webui-regional-prompter)
+
+
