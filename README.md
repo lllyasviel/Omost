@@ -26,7 +26,9 @@ Or, you can use the below deployment (requires 8GB Nvidia VRAM):
 
 (Note that quant LLM requires `bitsandbytes` - some 9XX or 10XX or 20XX GPUs may have trouble in running it. If that happens, just use our official huggingface space.)
 
-# Screenshots (Random Seed 12345)
+# Screenshots
+
+(All with random seed 12345)
 
 a ragged man wearing a tattered jacket in the nineteenth century：
 
@@ -58,17 +60,17 @@ a funny cartoon batman fights joker:
 
 ![image](https://github.com/lllyasviel/Omost/assets/19834515/f3e6e8e8-2e08-4e5e-a109-a8054461e71f)
 
-# Examples (Seed 12345, with Conversational Editing)
+# Examples (with Conversational Editing)
 
-*(Below is a raw transcript from default model)*
+*(Below is a raw transcript from default model, with random seed 123456)*
 
 *(If the GitHub's code block rendering is causing troubles to read long lines, click [here](https://raw.githubusercontent.com/lllyasviel/Omost/main/README.md) to read raw texts.)*
 
 ### User
 
-generate an image of the fierce battle of warriors and dinosaurs
+generate an image of the fierce battle of warriors and the dragon
 
-### Assistant (model response)
+### Assistant
 
 ```python
 # Initialize the canvas
@@ -76,136 +78,113 @@ canvas = Canvas()
 
 # Set a global description for the canvas
 canvas.set_global_description(
-    description='An intense battle scene featuring warriors and dinosaurs.',
+    description='A fierce battle between warriors and a dragon.',
     detailed_descriptions=[
-        'In this dramatic scene, warriors clad in ancient armor engage in a fierce battle with massive dinosaurs.',
-        'The warriors, wielding swords and shields, are positioned strategically to counter the dinosaurs, which are a mix of fierce predators and gentle herbivores.',
-        'The dinosaurs are depicted in various stages of attack and defense, with some roaring and others charging.',
-        'The background features a lush, prehistoric landscape with dense forests, towering trees, and a misty atmosphere.',
-        'The sky is overcast with dark, ominous clouds, adding to the intensity of the battle.',
-        'The ground is uneven, with patches of mud and fallen trees, creating obstacles for both the warriors and dinosaurs.',
-        'The overall mood is one of chaos and adrenaline, capturing the raw power and bravery of the warriors and the primal fury of the dinosaurs.',
+        'In this intense scene, a group of fierce warriors is engaged in an epic battle with a mighty dragon.',
+        'The warriors, clad in armor and wielding swords and shields, are positioned on the left side of the image.',
+        'Their expressions are determined and focused, reflecting their resolve to defeat the dragon.',
+        'The dragon, with its massive wings spread wide and its fiery breath illuminating the scene, dominates the center of the image.',
+        'Its scales glisten with a metallic sheen, and its eyes burn with a fierce intensity.',
+        'The background is a dark, stormy sky with flashes of lightning, adding to the drama and tension of the battle.',
+        'The ground is littered with debris and the remnants of previous battles, enhancing the sense of a long and brutal conflict.',
+        'The overall atmosphere is one of chaos and intensity, with the warriors and the dragon locked in a fierce struggle for survival.',
     ],
-    tags='battle, warriors, dinosaurs, ancient armor, swords, shields, fierce predators, gentle herbivores, lush landscape, prehistoric, dense forests, towering trees, misty atmosphere, overcast sky, dark clouds, uneven ground, mud patches, fallen trees, chaos, adrenaline, raw power, bravery, primal fury',
+    tags='battle, warriors, dragon, fierce, armor, swords, shields, determined, focused, epic, intense, metallic, glistening, fiery breath, stormy sky, lightning, debris, conflict, struggle, survival, chaos, tension, drama, wings, scales, eyes, burning, illuminated',
     HTML_web_color_name='darkslategray',
 )
 
-# Add a group of warriors fighting a dinosaur.
+# Add a group of fierce warriors.
+canvas.add_local_description(
+    location='on the left',
+    offset='no offset',
+    area='a large horizontal area',
+    distance_to_viewer=5.0,
+    description='A group of fierce warriors.',
+    detailed_descriptions=[
+        'The warriors, clad in gleaming armor, are positioned on the left side of the image.',
+        'They are armed with swords, shields, and spears, ready for battle.',
+        'Their faces are set with determination and focus, reflecting their resolve to defeat the dragon.',
+        'Some warriors are in mid-action, swinging their swords or shields, while others stand ready to strike.',
+        'The armor they wear is intricately designed, with symbols and patterns that signify their rank and bravery.',
+        'The ground beneath them is uneven and littered with debris, adding to the sense of a chaotic and intense battle.',
+    ],
+    tags='warriors, armor, swords, shields, spears, determined, focused, mid-action, intricate design, symbols, patterns, rank, bravery, uneven ground, debris, chaotic, intense, battle',
+    atmosphere='Determined and focused, ready for the fierce battle.',
+    style='Highly detailed and dynamic, capturing the intensity of the warriors.',
+    quality_meta='High resolution with intricate details and dynamic poses.',
+    HTML_web_color_name='darkgoldenrod',
+)
+
+# Add a mighty dragon.
 canvas.add_local_description(
     location='in the center',
     offset='no offset',
     area='a large square area',
-    distance_to_viewer=5.0,
-    description='A group of warriors fighting a dinosaur.',
-    detailed_descriptions=[
-        'In the heart of the scene, a group of warriors is engaged in a fierce battle with a massive dinosaur.',
-        'The warriors are clad in ancient, ornate armor, with intricate designs and battle scars.',
-        'They wield swords and shields, their movements a blur of aggression and skill.',
-        'The dinosaur, a towering T-Rex, is in mid-roar, its massive jaws open wide.',
-        'Its body is muscular and covered in rough, scaly skin.',
-        'The ground around them is churned up, with mud flying and debris scattered.',
-        'The intensity of this central fight is palpable, capturing the raw energy and primal nature of the combatants.',
-    ],
-    tags='warriors, dinosaur, battle, ancient armor, swords, shields, T-Rex, mid-roar, muscular, scaly skin, mud, debris, intensity, raw energy, primal nature',
-    atmosphere='The atmosphere is one of intense combat and raw power.',
-    style='The style is dynamic and action-packed, with a focus on movement and detail.',
-    quality_meta='High-quality depiction with detailed textures and dynamic lighting.',
-    HTML_web_color_name='darkolivegreen',
-)
-
-# Add a warrior defending against a stegosaurus.
-canvas.add_local_description(
-    location='on the left',
-    offset='slightly to the lower',
-    area='a medium-sized vertical area',
-    distance_to_viewer=6.5,
-    description='A warrior defending against a Stegosaurus.',
-    detailed_descriptions=[
-        'On the left side of the scene, a warrior is seen defending against a Stegosaurus.',
-        'The warrior, clad in leather armor, is positioned behind a wooden shield, using it to deflect the dinosaur’s attacks.',
-        'The Stegosaurus, with its distinctive row of plates running down its back, is in the midst of a defensive stance.',
-        'Its long tail swings back, ready to strike.',
-        'The surrounding area is littered with fallen branches and scattered rocks, adding to the chaotic environment.',
-        'The warrior’s expression is one of determination and focus, embodying the spirit of the battle.',
-    ],
-    tags='warrior, Stegosaurus, defense, leather armor, wooden shield, deflect attacks, row of plates, defensive stance, long tail, fallen branches, scattered rocks, chaotic, determination, focus',
-    atmosphere='The atmosphere is tense and focused, with a sense of impending action.',
-    style='The style is detailed and realistic, with a focus on the defensive actions.',
-    quality_meta='High-quality depiction with realistic textures and dynamic lighting.',
-    HTML_web_color_name='saddlebrown',
-)
-
-# Add a triceratops charging at warriors.
-canvas.add_local_description(
-    location='on the right',
-    offset='slightly to the upper',
-    area='a medium-sized vertical area',
     distance_to_viewer=7.0,
-    description='A Triceratops charging at warriors.',
+    description='A mighty dragon.',
     detailed_descriptions=[
-        'On the right side of the scene, a Triceratops is charging at a group of warriors.',
-        'The Triceratops, with its distinctive frill and horns, is depicted in a full-on charge, its body low to the ground and ready to attack.',
-        'The warriors, clad in chainmail and leather, are scattered in a defensive formation, their weapons at the ready.',
-        'The ground beneath the Triceratops is churned up, with dirt flying and the warriors’ formation broken.',
-        'The surrounding area is a mix of dense forest and open ground, with fallen trees and underbrush adding to the chaos.',
-        'The charging Triceratops creates a sense of urgency and danger, highlighting the primal nature of the dinosaurs.',
+        'The dragon is a massive creature, dominating the center of the image with its wide-spread wings and fiery breath.',
+        'Its scales glisten with a metallic sheen, reflecting the light from its fiery breath.',
+        "The dragon's eyes burn with a fierce intensity, and its teeth are sharp and menacing.",
+        'The wings of the dragon are powerful and spread wide, casting shadows over the battlefield.',
+        'The dragon’s body is muscular and covered in protective scales, with a long, sinewy tail that adds to its formidable appearance.',
+        'The fiery breath of the dragon illuminates the scene, casting a reddish glow over the warriors and the battlefield.',
     ],
-    tags='Triceratops, charging, warriors, distinctive frill, horns, full-on charge, low to the ground, attack, chainmail, leather, defensive formation, weapons, churned ground, dirt flying, broken formation, dense forest, open ground, fallen trees, underbrush, chaos, urgency, danger, primal nature',
-    atmosphere='The atmosphere is one of urgency and danger, with a sense of primal chaos.',
-    style='The style is dynamic and action-packed, with a focus on movement and chaos.',
-    quality_meta='High-quality depiction with detailed textures and dynamic lighting.',
-    HTML_web_color_name='darkgreen',
+    tags='dragon, massive, wings, fiery breath, glistening scales, metallic sheen, fierce eyes, sharp teeth, powerful wings, shadows, battlefield, muscular body, protective scales, sinewy tail, formidable, reddish glow, illumination',
+    atmosphere='Intense and menacing, with a powerful presence.',
+    style='Epic and dramatic, emphasizing the grandeur and danger of the dragon.',
+    quality_meta='High resolution with dramatic lighting and detailed textures.',
+    HTML_web_color_name='firebrick',
 )
 
-# Add a pterodactyl soaring above the battle.
+# Add a stormy sky with flashes of lightning.
 canvas.add_local_description(
     location='on the top',
-    offset='slightly to the right',
-    area='a small horizontal area',
-    distance_to_viewer=8.0,
-    description='A Pterodactyl soaring above the battle.',
+    offset='no offset',
+    area='a large horizontal area',
+    distance_to_viewer=10.0,
+    description='A stormy sky with flashes of lightning.',
     detailed_descriptions=[
-        'Above the battle, a Pterodactyl soars through the dark, overcast sky.',
-        'The Pterodactyl, with its large wings and sharp claws, is depicted in mid-flight, its eyes scanning the battlefield below.',
-        'The sky around it is filled with dark clouds, and occasional flashes of lightning illuminate the scene.',
-        'The presence of the Pterodactyl adds a sense of height and scale to the battle, emphasizing the vast and unpredictable nature of the prehistoric world.',
-        'The overall mood is one of ominous grandeur, as the Pterodactyl’s silent vigil adds to the tension below.',
+        'The background of the image is a dark, stormy sky filled with swirling clouds and flashes of lightning.',
+        'The sky is turbulent, with clouds dark and foreboding, adding to the dramatic tension of the battle.',
+        'The lightning flashes illuminate the scene, casting sharp, brief lights over the warriors and the dragon.',
+        'The stormy sky creates a sense of chaos and unpredictability, heightening the intensity of the battle below.',
+        'The overall atmosphere is one of impending doom and relentless conflict, with the storm mirroring the fierce struggle between the warriors and the dragon.',
     ],
-    tags='Pterodactyl, soaring, dark sky, overcast, large wings, sharp claws, mid-flight, eyes scanning, dark clouds, lightning, height, scale, battle, vast, unpredictable, prehistoric, ominous, grandeur, silent vigil, tension',
-    atmosphere='The atmosphere is one of ominous grandeur, with a sense of height and tension.',
-    style='The style is majestic and atmospheric, with a focus on scale and tension.',
-    quality_meta='High-quality depiction with detailed textures and atmospheric lighting.',
-    HTML_web_color_name='slategray',
+    tags='stormy sky, dark clouds, lightning, turbulent, foreboding, dramatic tension, illumination, chaos, unpredictability, intensity, impending doom, relentless conflict, battle, warriors, dragon, swirling clouds, sharp lights, brief lights',
+    atmosphere='Chaotic and intense, mirroring the fierce battle below.',
+    style='Dramatic and turbulent, emphasizing the conflict and tension.',
+    quality_meta='High resolution with dynamic lighting and detailed cloud textures.',
+    HTML_web_color_name='midnightblue',
 )
 
-# Add a fallen warrior and dinosaur.
+# Add a debris-covered battlefield.
 canvas.add_local_description(
-    location='on the bottom-left',
-    offset='slightly to the upper-right',
-    area='a small square area',
-    distance_to_viewer=4.5,
-    description='A fallen warrior and dinosaur.',
+    location='on the bottom',
+    offset='no offset',
+    area='a large horizontal area',
+    distance_to_viewer=5.0,
+    description='A debris-covered battlefield.',
     detailed_descriptions=[
-        'In the bottom-left corner, a fallen warrior and dinosaur are depicted in a moment of defeat.',
-        'The warrior, clad in tattered armor, lies on the ground, his sword slipping from his grasp.',
-        'The dinosaur, a gentle Apatosaur, is seen standing over the warrior, its long neck and tail forming a protective stance.',
-        'The surrounding area is littered with fallen debris, including branches and rocks, adding to the sense of chaos and loss.',
-        'The fallen warrior’s expression is one of resignation and sorrow, capturing the tragic end of the battle.',
-        'The overall mood is one of sorrow and loss, highlighting the cost of the fierce battle.',
+        'The ground of the battlefield is littered with debris, remnants of previous battles.',
+        'Broken weapons, shattered shields, and scattered armor pieces are strewn across the battlefield.',
+        'The terrain is uneven, with patches of mud and dirt, adding to the sense of a long and brutal conflict.',
+        'The debris-covered battlefield enhances the chaotic and intense atmosphere of the scene, reflecting the ferocity and duration of the battle.',
+        'The overall appearance is one of destruction and turmoil, with the remnants of previous battles serving as a grim reminder of the ongoing struggle.',
     ],
-    tags='fallen warrior, dinosaur, defeat, tattered armor, sword, slipping grasp, Apatosaur, standing over, protective stance, fallen debris, branches, rocks, chaos, loss, resignation, sorrow, tragic end, battle, cost, fierce',
-    atmosphere='The atmosphere is one of sorrow and loss, with a sense of tragic defeat.',
-    style='The style is somber and detailed, with a focus on the tragic end.',
-    quality_meta='High-quality depiction with detailed textures and somber lighting.',
-    HTML_web_color_name='dimgray',
+    tags='battlefield, debris, broken weapons, shattered shields, scattered armor, uneven terrain, mud, dirt, brutal conflict, chaos, intensity, destruction, turmoil, previous battles, ongoing struggle, remnants, ferocity, duration',
+    atmosphere='Chaotic and intense, reflecting the ferocity of the battle.',
+    style='Detailed and realistic, emphasizing the destruction and chaos.',
+    quality_meta='High resolution with detailed textures and realistic debris.',
+    HTML_web_color_name='darkolivegreen',
 )
 ```
 
 ### User
 
-add some meteorites to the picture
+change the dragon to a dinosaur
 
-### Assistant (model response)
+### Assistant
 
 ```python
 # Initialize the canvas
@@ -213,159 +192,113 @@ canvas = Canvas()
 
 # Set a global description for the canvas
 canvas.set_global_description(
-    description='An intense battle scene featuring warriors, dinosaurs, and meteorites.',
+    description='A fierce battle between warriors and a dinosaur.',
     detailed_descriptions=[
-        'In this dramatic scene, warriors clad in ancient armor engage in a fierce battle with massive dinosaurs, while meteorites fall from the sky.',
-        'The warriors, wielding swords and shields, are positioned strategically to counter the dinosaurs, which are a mix of fierce predators and gentle herbivores.',
-        'The dinosaurs are depicted in various stages of attack and defense, with some roaring and others charging.',
-        'The background features a lush, prehistoric landscape with dense forests, towering trees, and a misty atmosphere.',
-        'The sky is overcast with dark, ominous clouds, adding to the intensity of the battle. Meteorites are seen crashing into the ground, creating explosions and sending debris flying.',
-        'The ground is uneven, with patches of mud and fallen trees, creating obstacles for both the warriors and dinosaurs.',
-        'The overall mood is one of chaos and adrenaline, capturing the raw power and bravery of the warriors, the primal fury of the dinosaurs, and the destructive force of the meteorites.',
+        'In this intense scene, a group of fierce warriors is engaged in an epic battle with a mighty dinosaur.',
+        'The warriors, clad in armor and wielding swords and shields, are positioned on the left side of the image.',
+        'Their expressions are determined and focused, reflecting their resolve to defeat the dinosaur.',
+        'The dinosaur, with its massive body and powerful legs, dominates the center of the image.',
+        'Its scales glisten with a metallic sheen, and its eyes burn with a fierce intensity.',
+        'The background is a dark, stormy sky with flashes of lightning, adding to the drama and tension of the battle.',
+        'The ground is littered with debris and the remnants of previous battles, enhancing the sense of a long and brutal conflict.',
+        'The overall atmosphere is one of chaos and intensity, with the warriors and the dinosaur locked in a fierce struggle for survival.',
     ],
-    tags='battle, warriors, dinosaurs, ancient armor, swords, shields, fierce predators, gentle herbivores, lush landscape, prehistoric, dense forests, towering trees, misty atmosphere, overcast sky, dark clouds, uneven ground, mud patches, fallen trees, chaos, adrenaline, raw power, bravery, primal fury, meteorites, explosions, debris, destruction',
+    tags='battle, warriors, dinosaur, fierce, armor, swords, shields, determined, focused, epic, intense, metallic, glistening, stormy sky, lightning, debris, conflict, struggle, survival, chaos, tension, drama, powerful legs, scales, eyes, burning, illuminated',
     HTML_web_color_name='darkslategray',
 )
 
-# Add a group of warriors fighting a dinosaur.
+# Add a group of fierce warriors.
+canvas.add_local_description(
+    location='on the left',
+    offset='no offset',
+    area='a large horizontal area',
+    distance_to_viewer=5.0,
+    description='A group of fierce warriors.',
+    detailed_descriptions=[
+        'The warriors, clad in gleaming armor, are positioned on the left side of the image.',
+        'They are armed with swords, shields, and spears, ready for battle.',
+        'Their faces are set with determination and focus, reflecting their resolve to defeat the dinosaur.',
+        'Some warriors are in mid-action, swinging their swords or shields, while others stand ready to strike.',
+        'The armor they wear is intricately designed, with symbols and patterns that signify their rank and bravery.',
+        'The ground beneath them is uneven and littered with debris, adding to the sense of a chaotic and intense battle.',
+    ],
+    tags='warriors, armor, swords, shields, spears, determined, focused, mid-action, intricate design, symbols, patterns, rank, bravery, uneven ground, debris, chaotic, intense, battle',
+    atmosphere='Determined and focused, ready for the fierce battle.',
+    style='Highly detailed and dynamic, capturing the intensity of the warriors.',
+    quality_meta='High resolution with intricate details and dynamic poses.',
+    HTML_web_color_name='darkgoldenrod',
+)
+
+# Add a mighty dinosaur.
 canvas.add_local_description(
     location='in the center',
     offset='no offset',
     area='a large square area',
-    distance_to_viewer=5.0,
-    description='A group of warriors fighting a dinosaur.',
-    detailed_descriptions=[
-        'In the heart of the scene, a group of warriors is engaged in a fierce battle with a massive dinosaur.',
-        'The warriors are clad in ancient, ornate armor, with intricate designs and battle scars.',
-        'They wield swords and shields, their movements a blur of aggression and skill.',
-        'The dinosaur, a towering T-Rex, is in mid-roar, its massive jaws open wide.',
-        'Its body is muscular and covered in rough, scaly skin.',
-        'The ground around them is churned up, with mud flying and debris scattered.',
-        'The intensity of this central fight is palpable, capturing the raw energy and primal nature of the combatants.',
-    ],
-    tags='warriors, dinosaur, battle, ancient armor, swords, shields, T-Rex, mid-roar, muscular, scaly skin, mud, debris, intensity, raw energy, primal nature',
-    atmosphere='The atmosphere is one of intense combat and raw power.',
-    style='The style is dynamic and action-packed, with a focus on movement and detail.',
-    quality_meta='High-quality depiction with detailed textures and dynamic lighting.',
-    HTML_web_color_name='darkolivegreen',
-)
-
-# Add a warrior defending against a stegosaurus.
-canvas.add_local_description(
-    location='on the left',
-    offset='slightly to the lower',
-    area='a medium-sized vertical area',
-    distance_to_viewer=6.5,
-    description='A warrior defending against a Stegosaurus.',
-    detailed_descriptions=[
-        'On the left side of the scene, a warrior is seen defending against a Stegosaurus.',
-        'The warrior, clad in leather armor, is positioned behind a wooden shield, using it to deflect the dinosaur’s attacks.',
-        'The Stegosaurus, with its distinctive row of plates running down its back, is in the midst of a defensive stance.',
-        'Its long tail swings back, ready to strike.',
-        'The surrounding area is littered with fallen branches and scattered rocks, adding to the chaotic environment.',
-        'The warrior’s expression is one of determination and focus, embodying the spirit of the battle.',
-    ],
-    tags='warrior, Stegosaurus, defense, leather armor, wooden shield, deflect attacks, row of plates, defensive stance, long tail, fallen branches, scattered rocks, chaotic, determination, focus',
-    atmosphere='The atmosphere is tense and focused, with a sense of impending action.',
-    style='The style is detailed and realistic, with a focus on the defensive actions.',
-    quality_meta='High-quality depiction with realistic textures and dynamic lighting.',
-    HTML_web_color_name='saddlebrown',
-)
-
-# Add a triceratops charging at warriors.
-canvas.add_local_description(
-    location='on the right',
-    offset='slightly to the upper',
-    area='a medium-sized vertical area',
     distance_to_viewer=7.0,
-    description='A Triceratops charging at warriors.',
+    description='A mighty dinosaur.',
     detailed_descriptions=[
-        'On the right side of the scene, a Triceratops is charging at a group of warriors.',
-        'The Triceratops, with its distinctive frill and horns, is depicted in a full-on charge, its body low to the ground and ready to attack.',
-        'The warriors, clad in chainmail and leather, are scattered in a defensive formation, their weapons at the ready.',
-        'The ground beneath the Triceratops is churned up, with dirt flying and the warriors’ formation broken.',
-        'The surrounding area is a mix of dense forest and open ground, with fallen trees and underbrush adding to the chaos.',
-        'The charging Triceratops creates a sense of urgency and danger, highlighting the primal nature of the dinosaurs.',
+        'The dinosaur is a massive creature, dominating the center of the image with its powerful legs and fierce roar.',
+        'Its scales glisten with a metallic sheen, reflecting the light from the stormy sky.',
+        "The dinosaur's eyes burn with a fierce intensity, and its teeth are sharp and menacing.",
+        'The powerful legs of the dinosaur are muscular and add to its formidable appearance.',
+        'The ground shakes beneath its feet, enhancing the sense of a long and brutal conflict.',
+        'The overall appearance is one of destruction and turmoil, with the dinosaur adding to the chaotic atmosphere.',
     ],
-    tags='Triceratops, charging, warriors, distinctive frill, horns, full-on charge, low to the ground, attack, chainmail, leather, defensive formation, weapons, churned ground, dirt flying, broken formation, dense forest, open ground, fallen trees, underbrush, chaos, urgency, danger, primal nature',
-    atmosphere='The atmosphere is one of urgency and danger, with a sense of primal chaos.',
-    style='The style is dynamic and action-packed, with a focus on movement and chaos.',
-    quality_meta='High-quality depiction with detailed textures and dynamic lighting.',
-    HTML_web_color_name='darkgreen',
+    tags='dinosaur, massive, powerful legs, fierce roar, glistening scales, metallic sheen, fierce eyes, sharp teeth, muscular legs, formidable, ground shaking, destruction, turmoil, chaos, battle',
+    atmosphere='Intense and menacing, with a powerful presence.',
+    style='Epic and dramatic, emphasizing the grandeur and danger of the dinosaur.',
+    quality_meta='High resolution with dramatic lighting and detailed textures.',
+    HTML_web_color_name='firebrick',
 )
 
-# Add a pterodactyl soaring above the battle.
+# Add a stormy sky with flashes of lightning.
 canvas.add_local_description(
     location='on the top',
-    offset='slightly to the right',
-    area='a small horizontal area',
-    distance_to_viewer=8.0,
-    description='A Pterodactyl soaring above the battle.',
+    offset='no offset',
+    area='a large horizontal area',
+    distance_to_viewer=10.0,
+    description='A stormy sky with flashes of lightning.',
     detailed_descriptions=[
-        'Above the battle, a Pterodactyl soars through the dark, overcast sky.',
-        'The Pterodactyl, with its large wings and sharp claws, is depicted in mid-flight, its eyes scanning the battlefield below.',
-        'The sky around it is filled with dark clouds, and occasional flashes of lightning illuminate the scene.',
-        'The presence of the Pterodactyl adds a sense of height and scale to the battle, emphasizing the vast and unpredictable nature of the prehistoric world.',
-        'The overall mood is one of ominous grandeur, as the Pterodactyl’s silent vigil adds to the tension below.',
+        'The background of the image is a dark, stormy sky filled with swirling clouds and flashes of lightning.',
+        'The sky is turbulent, with clouds dark and foreboding, adding to the dramatic tension of the battle.',
+        'The lightning flashes illuminate the scene, casting sharp, brief lights over the warriors and the dinosaur.',
+        'The stormy sky creates a sense of chaos and unpredictability, heightening the intensity of the battle below.',
+        'The overall atmosphere is one of impending doom and relentless conflict, with the storm mirroring the fierce struggle between the warriors and the dinosaur.',
     ],
-    tags='Pterodactyl, soaring, dark sky, overcast, large wings, sharp claws, mid-flight, eyes scanning, dark clouds, lightning, height, scale, battle, vast, unpredictable, prehistoric, ominous, grandeur, silent vigil, tension',
-    atmosphere='The atmosphere is one of ominous grandeur, with a sense of height and tension.',
-    style='The style is majestic and atmospheric, with a focus on scale and tension.',
-    quality_meta='High-quality depiction with detailed textures and atmospheric lighting.',
-    HTML_web_color_name='slategray',
+    tags='stormy sky, dark clouds, lightning, turbulent, foreboding, dramatic tension, illumination, chaos, unpredictability, intensity, impending doom, relentless conflict, battle, warriors, dinosaur, swirling clouds, sharp lights, brief lights',
+    atmosphere='Chaotic and intense, mirroring the fierce battle below.',
+    style='Dramatic and turbulent, emphasizing the conflict and tension.',
+    quality_meta='High resolution with dynamic lighting and detailed cloud textures.',
+    HTML_web_color_name='midnightblue',
 )
 
-# Add a fallen warrior and dinosaur.
+# Add a debris-covered battlefield.
 canvas.add_local_description(
-    location='on the bottom-left',
-    offset='slightly to the upper-right',
-    area='a small square area',
-    distance_to_viewer=4.5,
-    description='A fallen warrior and dinosaur.',
+    location='on the bottom',
+    offset='no offset',
+    area='a large horizontal area',
+    distance_to_viewer=5.0,
+    description='A debris-covered battlefield.',
     detailed_descriptions=[
-        'In the bottom-left corner, a fallen warrior and dinosaur are depicted in a moment of defeat.',
-        'The warrior, clad in tattered armor, lies on the ground, his sword slipping from his grasp.',
-        'The dinosaur, a gentle Apatosaur, is seen standing over the warrior, its long neck and tail forming a protective stance.',
-        'The surrounding area is littered with fallen debris, including branches and rocks, adding to the sense of chaos and loss.',
-        'The fallen warrior’s expression is one of resignation and sorrow, capturing the tragic end of the battle.',
-        'The overall mood is one of sorrow and loss, highlighting the cost of the fierce battle.',
+        'The ground of the battlefield is littered with debris, remnants of previous battles.',
+        'Broken weapons, shattered shields, and scattered armor pieces are strewn across the battlefield.',
+        'The terrain is uneven, with patches of mud and dirt, adding to the sense of a long and brutal conflict.',
+        'The debris-covered battlefield enhances the chaotic and intense atmosphere of the scene, reflecting the ferocity and duration of the battle.',
+        'The overall appearance is one of destruction and turmoil, with the remnants of previous battles serving as a grim reminder of the ongoing struggle.',
     ],
-    tags='fallen warrior, dinosaur, defeat, tattered armor, sword, slipping grasp, Apatosaur, standing over, protective stance, fallen debris, branches, rocks, chaos, loss, resignation, sorrow, tragic end, battle, cost, fierce',
-    atmosphere='The atmosphere is one of sorrow and loss, with a sense of tragic defeat.',
-    style='The style is somber and detailed, with a focus on the tragic end.',
-    quality_meta='High-quality depiction with detailed textures and somber lighting.',
-    HTML_web_color_name='dimgray',
-)
-
-# Add meteorites crashing into the ground.
-canvas.add_local_description(
-    location='on the top-right',
-    offset='slightly to the lower-left',
-    area='a small square area',
-    distance_to_viewer=9.0,
-    description='Meteorites crashing into the ground.',
-    detailed_descriptions=[
-        'On the top-right side of the scene, meteorites are seen crashing into the ground.',
-        'The meteorites, glowing with intense heat, are depicted mid-crash, sending flames and debris flying.',
-        'The ground around the meteorites is scorched, with craters forming and smoke rising.',
-        'The surrounding area is filled with the sounds of explosions and the sight of burning debris.',
-        'The meteorites add a sense of danger and unpredictability to the already chaotic battle scene.',
-    ],
-    tags='meteorites, crashing, ground, intense heat, mid-crash, flames, debris, scorched, craters, smoke, explosions, burning debris, danger, unpredictability, chaotic, battle',
-    atmosphere='The atmosphere is one of danger and unpredictability, with a sense of chaotic destruction.',
-    style='The style is dramatic and intense, with a focus on the destructive force of the meteorites.',
-    quality_meta='High-quality depiction with dynamic textures and dramatic lighting.',
-    HTML_web_color_name='firebrick',
+    tags='battlefield, debris, broken weapons, shattered shields, scattered armor, uneven terrain, mud, dirt, brutal conflict, chaos, intensity, destruction, turmoil, previous battles, ongoing struggle, remnants, ferocity, duration',
+    atmosphere='Chaotic and intense, reflecting the ferocity of the battle.',
+    style='Detailed and realistic, emphasizing the destruction and chaos.',
+    quality_meta='High resolution with detailed textures and realistic debris.',
+    HTML_web_color_name='darkolivegreen',
 )
 ```
 
 (User can click the render button to actually render the image from any of those `Canvas` instances.)
 
-<details>
-<summary>Screenshots</summary>
-<img src="https://github.com/lllyasviel/Omost/assets/19834515/eaddedef-d038-4119-8496-0f481350bf37"  alt=""/>
-<img src="https://github.com/lllyasviel/Omost/assets/19834515/e6cf4120-2e95-4580-be8b-36221c0f4d35"  alt=""/>
-</details>
+![image](https://github.com/lllyasviel/Omost/assets/19834515/8dd6a49b-f32c-432b-9b31-ef91312b9cea)
+
+![image](https://github.com/lllyasviel/Omost/assets/19834515/8d6f375d-4fc6-4d51-a8bd-36980eb9f34e)
 
 # Symbols
 
