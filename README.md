@@ -620,6 +620,9 @@ Then we can draw this attention score table:
 
 ![image](https://github.com/lllyasviel/Omost/assets/19834515/a77936b3-050e-4894-9252-476713144f6c)
 
+where the upper arrow mean that we want to encourage the activation, while the lower arrow means we want to get rid of those activation.
+
+This manipulation directly modify attention scores and compute all prompts conditions in one single SDP attention pass. (See also the codes for more details.)
 
 ### Prompt Prefix Tree
 
