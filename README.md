@@ -610,6 +610,10 @@ In this repo I wrote a baseline formulation based on (3). I consider this parame
 
 Lets consider an extremely simplified image with only 2\*2=4 pixels:
 
+Then we have three prompts "two cats", "a black cat", "a white cat", and we have their masks:
+
+Then we can draw this attention score table:
+
 ### Prompt Prefix Tree
 
 123
