@@ -28,6 +28,13 @@ Or, you can use the below deployment (requires 8GB Nvidia VRAM):
 
 # Screenshots
 
+![image](https://github.com/lllyasviel/Omost/assets/19834515/6acc5eac-87e4-428b-a209-1d4b947c590c)
+
+![image](https://github.com/lllyasviel/Omost/assets/19834515/c60dadfc-6e82-4582-9561-8389260714c0)
+
+
+# Examples
+
 *(Below is a raw transcript from default model)*
 
 *(Random seed is 123456)*
