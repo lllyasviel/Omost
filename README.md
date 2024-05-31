@@ -606,6 +606,8 @@ As of 2024, if we want to achieve a region guided diffusion system, some possibl
 5. Use external control models like gligen and [InstanceDiffusion](https://github.com/frank-xwang/InstanceDiffusion). Those methods give the highest benchmark performance on region following but will also introduce some style offset to the base model since they are trained parameters. Also, those methods need to convert prompts to vectors and usually do not support prompts of arbitary length (but one can use them together with other attention methods to achieve arbitrary length).
 6. Some more possible layer options like layerdiffuse and [mulan](https://mulan-dataset.github.io/).
 
+In this repo I wrote a baseline formulation based on (3). I consider this parameter free formulation as a very standard baseline implementation that will almost introduce zero style offsets or quality degradation. In the future we may consider training some parametrized methods for Omost.
+
 ### Prompt Prefix Tree
 
 123
