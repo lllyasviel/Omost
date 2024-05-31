@@ -40,6 +40,12 @@ the greatest escape after the apocalypse, the hope of all humanity：
 
 ![image](https://github.com/lllyasviel/Omost/assets/19834515/c6653558-bfd8-40d9-95fb-c5ec1b68c289)
 
+jurassic dinosaur battle：
+
+![image](https://github.com/lllyasviel/Omost/assets/19834515/7efe0b56-9da2-4967-bbb0-ed3cf4eddd23)
+
+![image](https://github.com/lllyasviel/Omost/assets/19834515/f4b39798-488d-429c-bf96-27a7da6f91f7)
+
 
 
 # Examples
