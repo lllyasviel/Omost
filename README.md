@@ -595,7 +595,7 @@ The `atmosphere` and `style` and `quality_meta` are some experimental parameters
 
 In this repo, we provide a baseline render for Omost LLMs based on attention masks.
 
-### Spatial Guidance
+### Regional Prompter
 
 As of 2024, if we want to achieve a region guided diffusion system, some possible options are:
 
