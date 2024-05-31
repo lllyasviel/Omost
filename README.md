@@ -64,7 +64,7 @@ a funny cartoon batman fights joker:
 
 *(Below is a raw transcript from default model, with random seed 123456)*
 
-*(If the GitHub's code block rendering is causing troubles to read long lines, click [here](https://raw.githubusercontent.com/lllyasviel/Omost/main/README.md) to read raw texts.)*
+*(If the GitHub's code block rendering is causing troubles to reading long lines, click [here](https://raw.githubusercontent.com/lllyasviel/Omost/main/README.md) to read raw texts.)*
 
 ### User
 
