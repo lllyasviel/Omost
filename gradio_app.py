@@ -37,6 +37,7 @@ import lib_omost.canvas as omost_canvas
 
 sdxl_name = 'SG161222/RealVisXL_V4.0'
 # sdxl_name = 'stabilityai/stable-diffusion-xl-base-1.0'
+# sdxl_name = 'RunDiffusion/Juggernaut-X-v10'
 
 tokenizer = CLIPTokenizer.from_pretrained(sdxl_name, subfolder="tokenizer")
 tokenizer_2 = CLIPTokenizer.from_pretrained(sdxl_name, subfolder="tokenizer_2")
