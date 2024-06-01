@@ -68,10 +68,13 @@ def list_models(folder_path, file_extension=None):
                 for model_dir in dirs:
                     full_path = os.path.join(root, model_dir)
                     models.append((model_dir, full_path))
+    else:
+        print(f"Folder does not exist: {folder_path}")
     return models
 
 
 def load_pipeline(model_path):
+    print(f"Loading model from {model_path}")
     global tokenizer, tokenizer_2, text_encoder, text_encoder_2, vae, unet, pipeline
 
     if model_path.endswith('.safetensors'):
@@ -86,14 +89,10 @@ def load_pipeline(model_path):
     else:
         tokenizer = CLIPTokenizer.from_pretrained(sdxl_name, subfolder="tokenizer")
         tokenizer_2 = CLIPTokenizer.from_pretrained(sdxl_name, subfolder="tokenizer_2")
-        text_encoder = CLIPTextModel.from_pretrained(
-            sdxl_name, subfolder="text_encoder", torch_dtype=torch.float16, variant="fp16")
-        text_encoder_2 = CLIPTextModel.from_pretrained(
-            sdxl_name, subfolder="text_encoder_2", torch_dtype=torch.float16, variant="fp16")
-        vae = AutoencoderKL.from_pretrained(
-            sdxl_name, subfolder="vae", torch_dtype=torch.bfloat16, variant="fp16")
-        unet = UNet2DConditionModel.from_pretrained(
-            sdxl_name, subfolder="unet", torch_dtype=torch.float16, variant="fp16")
+        text_encoder = CLIPTextModel.from_pretrained(sdxl_name, subfolder="text_encoder")
+        text_encoder_2 = CLIPTextModel.from_pretrained(sdxl_name, subfolder="text_encoder_2")
+        vae = AutoencoderKL.from_pretrained(sdxl_name, subfolder="vae")
+        unet = UNet2DConditionModel.from_pretrained(sdxl_name, subfolder="unet")
 
     unet.set_attn_processor(AttnProcessor2_0())
     vae.set_attn_processor(AttnProcessor2_0())
@@ -112,9 +111,15 @@ def load_pipeline(model_path):
 
 
 def load_llm_model(model_name):
-    global llm_model, llm_tokenizer
+    global llm_model, llm_tokenizer, llm_model_name
+    if llm_model_name == model_name and llm_model:
+        return
 
-    model_path = os.path.join('./models/llm', model_name)
+    test_model_path = os.path.join('./models/llm', model_name)
+    if os.path.exists(test_model_path):
+        model_path = test_model_path
+    else:
+        model_path = model_name
     llm_model = AutoModelForCausalLM.from_pretrained(
         model_path,
         torch_dtype=torch.bfloat16,
@@ -125,6 +130,7 @@ def load_llm_model(model_name):
         model_path,
         token=HF_TOKEN
     )
+    llm_model_name = model_name
 
     memory_management.unload_all_models(llm_model)
 
@@ -135,20 +141,9 @@ def load_llm_model(model_name):
 llm_name = 'lllyasviel/omost-llama-3-8b-4bits'
 # llm_name = 'lllyasviel/omost-dolphin-2.9-llama3-8b-4bits'
 
-llm_model = AutoModelForCausalLM.from_pretrained(
-    llm_name,
-    torch_dtype=torch.bfloat16,
-    # This is computation type, not load/memory type. The loading quant type is baked in config.
-    token=HF_TOKEN,
-    device_map="auto"  # This will load model to gpu with an offload system
-)
-
-llm_tokenizer = AutoTokenizer.from_pretrained(
-    llm_name,
-    token=HF_TOKEN
-)
-
-memory_management.unload_all_models(llm_model)
+llm_model = None
+llm_model_name = None
+llm_tokenizer = None
 
 
 @torch.inference_mode()
@@ -177,6 +172,7 @@ def resize_without_crop(image, target_width, target_height):
 
 @torch.inference_mode()
 def chat_fn(message: str, history: list, seed: int, temperature: float, top_p: float, max_new_tokens: int) -> str:
+    global llm_model, llm_tokenizer
     np.random.seed(int(seed))
     torch.manual_seed(int(seed))
 
@@ -188,7 +184,9 @@ def chat_fn(message: str, history: list, seed: int, temperature: float, top_p: f
         conversation.extend([{"role": "user", "content": user}, {"role": "assistant", "content": assistant}])
 
     conversation.append({"role": "user", "content": message})
-
+    # Load the model if it is not loaded
+    if not llm_model:
+        load_llm_model(llm_name)
     memory_management.load_models_to_gpu(llm_model)
 
     input_ids = llm_tokenizer.apply_chat_template(
@@ -227,7 +225,6 @@ def chat_fn(message: str, history: list, seed: int, temperature: float, top_p: f
     outputs = []
     for text in streamer:
         outputs.append(text)
-        # print(outputs)
         yield "".join(outputs), interrupter
 
     return
@@ -361,16 +358,16 @@ def diffusion_fn(chatbot, canvas_outputs, num_samples, seed, image_width, image_
 
 def update_model_list():
     model_list = list_models('./models/checkpoints', '.safetensors')
-    options = [model for model, path in model_list]
+    options = [(model, path) for model, path in model_list]
     paths = {model: path for model, path in model_list}
-    return gr.update(choices=options, value=options[0] if options else ""), paths
+    return gr.Dropdown.update(choices=options, value=options[0][0] if options else ""), paths
 
 
 def update_llm_list():
     llm_list = list_models('./models/llm')
-    options = [os.path.basename(path) for name, path in llm_list]
+    options = [(os.path.basename(path), path) for name, path in llm_list]
     paths = {os.path.basename(path): path for name, path in llm_list}
-    return gr.update(choices=options, value=options[0] if options else ""), paths
+    return gr.Dropdown.update(choices=options, value=options[0][0] if options else ""), paths
 
 
 css = '''
@@ -419,7 +416,7 @@ with gr.Blocks(
                         step=1,
                         value=4096,
                         label="Max New Tokens")
-                    llm_select = gr.Dropdown(label="Select LLM Model", interactive=True)
+                    llm_select = gr.Dropdown(label="Select LLM Model", value=llm_name, choices=[(llm_name, llm_name)], interactive=True)
                     llm_refresh_btn = gr.Button("Refresh LLM List", variant="secondary", size="sm", min_width=60)
             with gr.Accordion(open=True, label='Image Diffusion Model'):
                 with gr.Group():
@@ -430,7 +427,8 @@ with gr.Blocks(
                     with gr.Row():
                         num_samples = gr.Slider(label="Image Number", minimum=1, maximum=12, value=1, step=1)
                         steps = gr.Slider(label="Sampling Steps", minimum=1, maximum=100, value=25, step=1)
-                    model_select = gr.Dropdown(label="Select Model", interactive=True)
+                    model_select = gr.Dropdown(label="Select Model", choices=list_models('./models/checkpoints', '.safetensors'),
+                                               interactive=True, value=list_models('./models/checkpoints', '.safetensors')[0][0])
                     model_refresh_btn = gr.Button("Refresh Model List", variant="secondary", size="sm", min_width=60)
 
             with gr.Accordion(open=False, label='Advanced'):
@@ -446,8 +444,8 @@ with gr.Blocks(
 
             examples = gr.Dataset(
                 samples=[
-                    ['generate an image of the fierce battle of warriors and a dragon'],
-                    ['change the dragon to a dinosaur']
+                    ['Generate an image of several squirrels in business suits having a meeting in a park'],
+                    ['Add a dog in the background']
                 ],
                 components=[gr.Textbox(visible=False)],
                 label='Quick Prompts'
