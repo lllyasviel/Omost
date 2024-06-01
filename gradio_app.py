@@ -1,8 +1,5 @@
 import os
 
-os.environ['HF_HOME'] = os.path.join(os.path.dirname(__file__), 'hf_download')
-HF_TOKEN = None
-
 import lib_omost.memory_management as memory_management
 import uuid
 
@@ -11,19 +8,14 @@ import numpy as np
 import gradio as gr
 import tempfile
 
-gradio_temp_dir = os.path.join(tempfile.gettempdir(), 'gradio')
-os.makedirs(gradio_temp_dir, exist_ok=True)
-
 from threading import Thread
 
 # Phi3 Hijack
 from transformers.models.phi3.modeling_phi3 import Phi3PreTrainedModel
 
-Phi3PreTrainedModel._supports_sdpa = True
-
 from PIL import Image
 from transformers import AutoModelForCausalLM, AutoTokenizer, TextIteratorStreamer
-from diffusers import AutoencoderKL, UNet2DConditionModel
+from diffusers import AutoencoderKL, UNet2DConditionModel, StableDiffusionXLPipeline
 from diffusers.models.attention_processor import AttnProcessor2_0
 from transformers import CLIPTextModel, CLIPTokenizer
 from lib_omost.pipeline import StableDiffusionXLOmostPipeline
@@ -32,39 +24,110 @@ from transformers.generation.stopping_criteria import StoppingCriteriaList
 
 import lib_omost.canvas as omost_canvas
 
+os.environ['HF_HOME'] = os.path.join(os.path.dirname(__file__), 'hf_download')
+HF_TOKEN = None
+
+gradio_temp_dir = os.path.join(tempfile.gettempdir(), 'gradio')
+os.makedirs(gradio_temp_dir, exist_ok=True)
+
+Phi3PreTrainedModel._supports_sdpa = True
 
 # SDXL
 
-sdxl_name = 'SG161222/RealVisXL_V4.0'
-# sdxl_name = 'stabilityai/stable-diffusion-xl-base-1.0'
+sdxl_name = 'RunDiffusion/Juggernaut-X-v10'
+sdxl_names = {
+    'RunDiffusion/Juggernaut-X-v10': 'Juggernaut-X-v10',
+    'SG161222/RealVisXL_V4.0': 'RealVisXL_V4.0',
+    'stabilityai/stable-diffusion-xl-base-1.0': 'stable-diffusion-xl-base-1.0'
+}
 
-tokenizer = CLIPTokenizer.from_pretrained(
-    sdxl_name, subfolder="tokenizer")
-tokenizer_2 = CLIPTokenizer.from_pretrained(
-    sdxl_name, subfolder="tokenizer_2")
-text_encoder = CLIPTextModel.from_pretrained(
-    sdxl_name, subfolder="text_encoder", torch_dtype=torch.float16, variant="fp16")
-text_encoder_2 = CLIPTextModel.from_pretrained(
-    sdxl_name, subfolder="text_encoder_2", torch_dtype=torch.float16, variant="fp16")
-vae = AutoencoderKL.from_pretrained(
-    sdxl_name, subfolder="vae", torch_dtype=torch.bfloat16, variant="fp16")  # bfloat16 vae
-unet = UNet2DConditionModel.from_pretrained(
-    sdxl_name, subfolder="unet", torch_dtype=torch.float16, variant="fp16")
+tokenizer = None
+tokenizer_2 = None
+text_encoder = None
+text_encoder_2 = None
+vae = None
+unet = None
+pipeline = None
 
-unet.set_attn_processor(AttnProcessor2_0())
-vae.set_attn_processor(AttnProcessor2_0())
 
-pipeline = StableDiffusionXLOmostPipeline(
-    vae=vae,
-    text_encoder=text_encoder,
-    tokenizer=tokenizer,
-    text_encoder_2=text_encoder_2,
-    tokenizer_2=tokenizer_2,
-    unet=unet,
-    scheduler=None,  # We completely give up diffusers sampling system and use A1111's method
-)
+def list_models(folder_path, file_extension=None):
+    models = []
+    if file_extension == ".safetensors":
+        models = [(key, name) for key, name in sdxl_names.items()]
 
-memory_management.unload_all_models([text_encoder, text_encoder_2, vae, unet])
+    if os.path.exists(folder_path):
+        for root, dirs, files in os.walk(folder_path):
+            # If we want to list only files with a specific extension
+            if file_extension:
+                for file in files:
+                    if file.endswith(file_extension):
+                        full_path = os.path.join(root, file)
+                        models.append((file, full_path))
+            else:
+                # Append dirs
+                for model_dir in dirs:
+                    full_path = os.path.join(root, model_dir)
+                    models.append((model_dir, full_path))
+    return models
+
+
+def load_pipeline(model_path):
+    global tokenizer, tokenizer_2, text_encoder, text_encoder_2, vae, unet, pipeline
+
+    if model_path.endswith('.safetensors'):
+        temp_pipeline = StableDiffusionXLPipeline.from_single_file(model_path)
+
+        tokenizer = temp_pipeline.tokenizer
+        tokenizer_2 = temp_pipeline.tokenizer_2
+        text_encoder = temp_pipeline.text_encoder
+        text_encoder_2 = temp_pipeline.text_encoder_2
+        vae = temp_pipeline.vae
+        unet = temp_pipeline.unet
+    else:
+        tokenizer = CLIPTokenizer.from_pretrained(sdxl_name, subfolder="tokenizer")
+        tokenizer_2 = CLIPTokenizer.from_pretrained(sdxl_name, subfolder="tokenizer_2")
+        text_encoder = CLIPTextModel.from_pretrained(
+            sdxl_name, subfolder="text_encoder", torch_dtype=torch.float16, variant="fp16")
+        text_encoder_2 = CLIPTextModel.from_pretrained(
+            sdxl_name, subfolder="text_encoder_2", torch_dtype=torch.float16, variant="fp16")
+        vae = AutoencoderKL.from_pretrained(
+            sdxl_name, subfolder="vae", torch_dtype=torch.bfloat16, variant="fp16")
+        unet = UNet2DConditionModel.from_pretrained(
+            sdxl_name, subfolder="unet", torch_dtype=torch.float16, variant="fp16")
+
+    unet.set_attn_processor(AttnProcessor2_0())
+    vae.set_attn_processor(AttnProcessor2_0())
+
+    pipeline = StableDiffusionXLOmostPipeline(
+        vae=vae,
+        text_encoder=text_encoder,
+        tokenizer=tokenizer,
+        text_encoder_2=text_encoder_2,
+        tokenizer_2=tokenizer_2,
+        unet=unet,
+        scheduler=None,  # We completely give up diffusers sampling system and use A1111's method
+    )
+
+    memory_management.unload_all_models([text_encoder, text_encoder_2, vae, unet])
+
+
+def load_llm_model(model_name):
+    global llm_model, llm_tokenizer
+
+    model_path = os.path.join('./models/llm', model_name)
+    llm_model = AutoModelForCausalLM.from_pretrained(
+        model_path,
+        torch_dtype=torch.bfloat16,
+        token=HF_TOKEN,
+        device_map="auto"
+    )
+    llm_tokenizer = AutoTokenizer.from_pretrained(
+        model_path,
+        token=HF_TOKEN
+    )
+
+    memory_management.unload_all_models(llm_model)
+
 
 # LLM
 
@@ -74,7 +137,8 @@ llm_name = 'lllyasviel/omost-llama-3-8b-4bits'
 
 llm_model = AutoModelForCausalLM.from_pretrained(
     llm_name,
-    torch_dtype=torch.bfloat16,  # This is computation type, not load/memory type. The loading quant type is baked in config.
+    torch_dtype=torch.bfloat16,
+    # This is computation type, not load/memory type. The loading quant type is baked in config.
     token=HF_TOKEN,
     device_map="auto"  # This will load model to gpu with an offload system
 )
@@ -112,7 +176,7 @@ def resize_without_crop(image, target_width, target_height):
 
 
 @torch.inference_mode()
-def chat_fn(message: str, history: list, seed:int, temperature: float, top_p: float, max_new_tokens: int) -> str:
+def chat_fn(message: str, history: list, seed: int, temperature: float, top_p: float, max_new_tokens: int) -> str:
     np.random.seed(int(seed))
     torch.manual_seed(int(seed))
 
@@ -175,7 +239,8 @@ def post_chat(history):
 
     try:
         if history:
-            history = [(user, assistant) for user, assistant in history if isinstance(user, str) and isinstance(assistant, str)]
+            history = [(user, assistant) for user, assistant in history if
+                       isinstance(user, str) and isinstance(assistant, str)]
             last_assistant = history[-1][1] if len(history) > 0 else None
             canvas = omost_canvas.Canvas.from_bot_response(last_assistant)
             canvas_outputs = canvas.process()
@@ -188,9 +253,16 @@ def post_chat(history):
 @torch.inference_mode()
 def diffusion_fn(chatbot, canvas_outputs, num_samples, seed, image_width, image_height,
                  highres_scale, steps, cfg, highres_steps, highres_denoise, negative_prompt):
-
     use_initial_latent = False
     eps = 0.05
+    if not isinstance(pipeline, StableDiffusionXLOmostPipeline):
+        raise ValueError("Pipeline is not StableDiffusionXLOmostPipeline")
+
+    if not isinstance(vae, AutoencoderKL):
+        raise ValueError("VAE is not AutoencoderKL")
+
+    if not isinstance(unet, UNet2DConditionModel):
+        raise ValueError("UNet is not UNet2DConditionModel")
 
     image_width, image_height = int(image_width // 64) * 64, int(image_height // 64) * 64
 
@@ -198,7 +270,8 @@ def diffusion_fn(chatbot, canvas_outputs, num_samples, seed, image_width, image_
 
     memory_management.load_models_to_gpu([text_encoder, text_encoder_2])
 
-    positive_cond, positive_pooler, negative_cond, negative_pooler = pipeline.all_conds_from_canvas(canvas_outputs, negative_prompt)
+    positive_cond, positive_pooler, negative_cond, negative_pooler = pipeline.all_conds_from_canvas(canvas_outputs,
+                                                                                                    negative_prompt)
 
     if use_initial_latent:
         memory_management.load_models_to_gpu([vae])
@@ -209,7 +282,14 @@ def diffusion_fn(chatbot, canvas_outputs, num_samples, seed, image_width, image_
             kernel_size=(initial_latent_blur * 2 + 1,) * 2, stride=(1, 1))
         initial_latent = torch.nn.functional.interpolate(initial_latent, (image_height, image_width))
         initial_latent = initial_latent.to(dtype=vae.dtype, device=vae.device)
-        initial_latent = vae.encode(initial_latent).latent_dist.mode() * vae.config.scaling_factor
+        try:
+            if isinstance(vae.config, dict):
+                initial_latent = vae.encode(initial_latent).latent_dist.mode() * vae.config['scaling_factor']
+            else:
+                initial_latent = vae.encode(initial_latent).latent_dist.mode() * vae.config.scaling_factor
+        except Exception as e:
+            print('Failed to encode initial latent:', e)
+            initial_latent = torch.zeros(size=(1, 4, image_height // 8, image_width // 8), dtype=torch.float32)
     else:
         initial_latent = torch.zeros(size=(num_samples, 4, image_height // 8, image_width // 8), dtype=torch.float32)
 
@@ -279,6 +359,20 @@ def diffusion_fn(chatbot, canvas_outputs, num_samples, seed, image_width, image_
     return chatbot
 
 
+def update_model_list():
+    model_list = list_models('./models/checkpoints', '.safetensors')
+    options = [model for model, path in model_list]
+    paths = {model: path for model, path in model_list}
+    return gr.update(choices=options, value=options[0] if options else ""), paths
+
+
+def update_llm_list():
+    llm_list = list_models('./models/llm')
+    options = [os.path.basename(path) for name, path in llm_list]
+    paths = {os.path.basename(path): path for name, path in llm_list}
+    return gr.update(choices=options, value=options[0] if options else ""), paths
+
+
 css = '''
 code {white-space: pre-wrap !important;}
 .gradio-container {max-width: none !important;}
@@ -299,7 +393,8 @@ with gr.Blocks(
             with gr.Row():
                 clear_btn = gr.Button("➕ New Chat", variant="secondary", size="sm", min_width=60)
                 retry_btn = gr.Button("Retry", variant="secondary", size="sm", min_width=60, visible=False)
-                undo_btn = gr.Button("✏️️ Edit Last Input", variant="secondary", size="sm", min_width=60, interactive=False)
+                undo_btn = gr.Button("✏️️ Edit Last Input", variant="secondary", size="sm", min_width=60,
+                                     interactive=False)
 
             seed = gr.Number(label="Random Seed", value=12345, precision=0)
 
@@ -324,6 +419,8 @@ with gr.Blocks(
                         step=1,
                         value=4096,
                         label="Max New Tokens")
+                    llm_select = gr.Dropdown(label="Select LLM Model", interactive=True)
+                    llm_refresh_btn = gr.Button("Refresh LLM List", variant="secondary", size="sm", min_width=60)
             with gr.Accordion(open=True, label='Image Diffusion Model'):
                 with gr.Group():
                     with gr.Row():
@@ -333,13 +430,17 @@ with gr.Blocks(
                     with gr.Row():
                         num_samples = gr.Slider(label="Image Number", minimum=1, maximum=12, value=1, step=1)
                         steps = gr.Slider(label="Sampling Steps", minimum=1, maximum=100, value=25, step=1)
+                    model_select = gr.Dropdown(label="Select Model", interactive=True)
+                    model_refresh_btn = gr.Button("Refresh Model List", variant="secondary", size="sm", min_width=60)
 
             with gr.Accordion(open=False, label='Advanced'):
                 cfg = gr.Slider(label="CFG Scale", minimum=1.0, maximum=32.0, value=5.0, step=0.01)
-                highres_scale = gr.Slider(label="HR-fix Scale (\"1\" is disabled)", minimum=1.0, maximum=2.0, value=1.0, step=0.01)
+                highres_scale = gr.Slider(label="HR-fix Scale (\"1\" is disabled)", minimum=1.0, maximum=2.0, value=1.0,
+                                          step=0.01)
                 highres_steps = gr.Slider(label="Highres Fix Steps", minimum=1, maximum=100, value=20, step=1)
                 highres_denoise = gr.Slider(label="Highres Fix Denoise", minimum=0.1, maximum=1.0, value=0.4, step=0.01)
-                n_prompt = gr.Textbox(label="Negative Prompt", value='lowres, bad anatomy, bad hands, cropped, worst quality')
+                n_prompt = gr.Textbox(label="Negative Prompt",
+                                      value='lowres, bad anatomy, bad hands, cropped, worst quality')
 
             render_button = gr.Button("Render the Image!", size='lg', variant="primary", visible=False)
 
@@ -377,6 +478,30 @@ with gr.Blocks(
         fn=lambda x: x, inputs=[
             chatInterface.chatbot
         ], outputs=[chatInterface.chatbot_state])
+
+    model_refresh_btn.click(
+        fn=update_model_list,
+        inputs=[],
+        outputs=[model_select]
+    )
+
+    llm_refresh_btn.click(
+        fn=update_llm_list,
+        inputs=[],
+        outputs=[llm_select]
+    )
+
+    model_select.change(
+        fn=load_pipeline,
+        inputs=[model_select],
+        outputs=[]
+    )
+
+    llm_select.change(
+        fn=load_llm_model,
+        inputs=[llm_select],
+        outputs=[]
+    )
 
 if __name__ == "__main__":
     demo.queue().launch(inbrowser=True, server_name='0.0.0.0')
