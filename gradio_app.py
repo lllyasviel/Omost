@@ -1,28 +1,25 @@
+import argparse
 import os
-
-import lib_omost.memory_management as memory_management
-import uuid
-
-import torch
-import numpy as np
-import gradio as gr
 import tempfile
-
+import uuid
 from threading import Thread
 
+import gradio as gr
+import numpy as np
+import torch
+from PIL import Image
+from diffusers import AutoencoderKL, UNet2DConditionModel, StableDiffusionXLImg2ImgPipeline
+from diffusers.models.attention_processor import AttnProcessor2_0
+from transformers import AutoModelForCausalLM, AutoTokenizer, TextIteratorStreamer
+from transformers import CLIPTextModel, CLIPTokenizer
+from transformers.generation.stopping_criteria import StoppingCriteriaList
 # Phi3 Hijack
 from transformers.models.phi3.modeling_phi3 import Phi3PreTrainedModel
 
-from PIL import Image
-from transformers import AutoModelForCausalLM, AutoTokenizer, TextIteratorStreamer
-from diffusers import AutoencoderKL, UNet2DConditionModel, StableDiffusionXLPipeline, StableDiffusionXLImg2ImgPipeline
-from diffusers.models.attention_processor import AttnProcessor2_0
-from transformers import CLIPTextModel, CLIPTokenizer
-from lib_omost.pipeline import StableDiffusionXLOmostPipeline
-from chat_interface import ChatInterface
-from transformers.generation.stopping_criteria import StoppingCriteriaList
-
 import lib_omost.canvas as omost_canvas
+import lib_omost.memory_management as memory_management
+from chat_interface import ChatInterface
+from lib_omost.pipeline import StableDiffusionXLOmostPipeline
 
 os.environ['HF_HOME'] = os.path.join(os.path.dirname(__file__), 'hf_download')
 HF_TOKEN = None
@@ -32,13 +29,28 @@ os.makedirs(gradio_temp_dir, exist_ok=True)
 
 Phi3PreTrainedModel._supports_sdpa = True
 
-# SDXL
+parser = argparse.ArgumentParser()
+parser.add_argument("--hf_token", type=str, default=None)
+parser.add_argument("--sdxl_name", type=str, default='RunDiffusion/Juggernaut-X-v10')
+parser.add_argument("--llm_name", type=str, default='lllyasviel/omost-llama-3-8b-4bits')
+parser.add_argument("--checkpoints_folder", type=str,
+                    default=os.path.join(os.path.dirname(__file__), "models", "checkpoints"))
+parser.add_argument("--llm_folder", type=str, default=os.path.join(os.path.dirname(__file__), "models", "llm"))
+args = parser.parse_args()
 
-sdxl_name = 'RunDiffusion/Juggernaut-X-v10'
-sdxl_names = {
+DEFAULT_CHECKPOINTS = {
     'RunDiffusion/Juggernaut-X-v10': 'Juggernaut-X-v10',
     'SG161222/RealVisXL_V4.0': 'RealVisXL_V4.0',
     'stabilityai/stable-diffusion-xl-base-1.0': 'stable-diffusion-xl-base-1.0'
+}
+
+DEFAULT_LLMS = {
+    'lllyasviel/omost-llama-3-8b-4bits': 'omost-llama-3-8b-4bits',
+    'lllyasviel/omost-dolphin-2.9-llama3-8b-4bits': 'omost-dolphin-2.9-llama3-8b-4bits',
+    'lllyasviel/omost-phi-3-mini-128k-8bits': 'omost-phi-3-mini-128k-8bits',
+    'lllyasviel/omost-llama-3-8b': 'omost-llama-3-8b',
+    'lllyasviel/omost-dolphin-2.9-llama3-8b': 'omost-dolphin-2.9-llama3-8b',
+    'lllyasviel/omost-phi-3-mini-128k': 'omost-phi-3-mini-128k'
 }
 
 tokenizer = None
@@ -48,20 +60,28 @@ text_encoder_2 = None
 vae = None
 unet = None
 pipeline = None
+loaded_pipeline = None
+llm_model = None
+llm_model_name = None
+llm_tokenizer = None
 
 
-def list_models(folder_path, file_extension=None):
-    models = []
-    if file_extension == ".safetensors":
-        models = [(key, name) for key, name in sdxl_names.items()]
+def list_models(llm: bool = False):
+    if not llm:
+        folder_path = args.checkpoints_folder
+        default_model = args.sdxl_name
+        models = [(name, key) for key, name in DEFAULT_CHECKPOINTS.items()]
+    else:
+        folder_path = args.llm_folder
+        default_model = args.llm_name
+        models = [(name, key) for key, name in DEFAULT_LLMS.items()]
 
     if os.path.exists(folder_path):
         for root, dirs, files in os.walk(folder_path):
             # If we want to list only files with a specific extension
-            if file_extension:
+            if not llm:
                 for file in files:
-                    if file.endswith(file_extension):
-                        print(f"Found model: {file}")
+                    if file.endswith(".safetensors"):
                         full_path = os.path.join(root, file)
                         models.append((file, full_path))
             else:
@@ -69,15 +89,21 @@ def list_models(folder_path, file_extension=None):
                 for model_dir in dirs:
                     full_path = os.path.join(root, model_dir)
                     models.append((model_dir, full_path))
-                    print(f"Found model: {model_dir}")
+    if llm:
+        if llm_model and llm_model_name and llm_model_name in [name for key, name in models]:
+            default_model = llm_model_name
     else:
-        print(f"Folder does not exist: {folder_path}")
-    return models
+        if pipeline and loaded_pipeline and loaded_pipeline in [name for key, name in models]:
+            default_model = loaded_pipeline
+
+    return models, default_model
 
 
 def load_pipeline(model_path):
+    global tokenizer, tokenizer_2, text_encoder, text_encoder_2, vae, unet, pipeline, loaded_pipeline
+    if pipeline is not None and loaded_pipeline == model_path:
+        return
     print(f"Loading model from {model_path}")
-    global tokenizer, tokenizer_2, text_encoder, text_encoder_2, vae, unet, pipeline
 
     if model_path.endswith('.safetensors'):
         temp_pipeline = StableDiffusionXLImg2ImgPipeline.from_single_file(model_path)
@@ -86,15 +112,18 @@ def load_pipeline(model_path):
         tokenizer_2 = temp_pipeline.tokenizer_2
         text_encoder = temp_pipeline.text_encoder
         text_encoder_2 = temp_pipeline.text_encoder_2
+        # Convert text_encoder_2 to ClipTextModel
+        text_encoder_2 = CLIPTextModel(config=text_encoder_2.config)
         vae = temp_pipeline.vae
         unet = temp_pipeline.unet
     else:
-        tokenizer = CLIPTokenizer.from_pretrained(sdxl_name, subfolder="tokenizer")
-        tokenizer_2 = CLIPTokenizer.from_pretrained(sdxl_name, subfolder="tokenizer_2")
-        text_encoder = CLIPTextModel.from_pretrained(sdxl_name, subfolder="text_encoder")
-        text_encoder_2 = CLIPTextModel.from_pretrained(sdxl_name, subfolder="text_encoder_2")
-        vae = AutoencoderKL.from_pretrained(sdxl_name, subfolder="vae")
-        unet = UNet2DConditionModel.from_pretrained(sdxl_name, subfolder="unet")
+        tokenizer = CLIPTokenizer.from_pretrained(model_path, subfolder="tokenizer", torch_dtype=torch.float16)
+        tokenizer_2 = CLIPTokenizer.from_pretrained(model_path, subfolder="tokenizer_2", torch_dtype=torch.float16)
+        text_encoder = CLIPTextModel.from_pretrained(model_path, subfolder="text_encoder", torch_dtype=torch.float16)
+        text_encoder_2 = CLIPTextModel.from_pretrained(model_path, subfolder="text_encoder_2",
+                                                       torch_dtype=torch.float16)
+        vae = AutoencoderKL.from_pretrained(model_path, subfolder="vae", torch_dtype=torch.float16)
+        unet = UNet2DConditionModel.from_pretrained(model_path, subfolder="unet", torch_dtype=torch.float16)
 
     unet.set_attn_processor(AttnProcessor2_0())
     vae.set_attn_processor(AttnProcessor2_0())
@@ -108,6 +137,7 @@ def load_pipeline(model_path):
         unet=unet,
         scheduler=None,  # We completely give up diffusers sampling system and use A1111's method
     )
+    loaded_pipeline = model_path
 
     memory_management.unload_all_models([text_encoder, text_encoder_2, vae, unet])
 
@@ -116,36 +146,21 @@ def load_llm_model(model_name):
     global llm_model, llm_tokenizer, llm_model_name
     if llm_model_name == model_name and llm_model:
         return
+    print(f"Loading LLM model from {model_name}")
 
-    test_model_path = os.path.join('./models/llm', model_name)
-    if os.path.exists(test_model_path):
-        model_path = test_model_path
-    else:
-        model_path = model_name
     llm_model = AutoModelForCausalLM.from_pretrained(
-        model_path,
+        model_name,
         torch_dtype=torch.bfloat16,
         token=HF_TOKEN,
         device_map="auto"
     )
     llm_tokenizer = AutoTokenizer.from_pretrained(
-        model_path,
+        model_name,
         token=HF_TOKEN
     )
     llm_model_name = model_name
 
     memory_management.unload_all_models(llm_model)
-
-
-# LLM
-
-# llm_name = 'lllyasviel/omost-phi-3-mini-128k-8bits'
-llm_name = 'lllyasviel/omost-llama-3-8b-4bits'
-# llm_name = 'lllyasviel/omost-dolphin-2.9-llama3-8b-4bits'
-
-llm_model = None
-llm_model_name = None
-llm_tokenizer = None
 
 
 @torch.inference_mode()
@@ -174,7 +189,7 @@ def resize_without_crop(image, target_width, target_height):
 
 @torch.inference_mode()
 def chat_fn(message: str, history: list, seed: int, temperature: float, top_p: float, max_new_tokens: int) -> str:
-    global llm_model, llm_tokenizer
+    global llm_model, llm_tokenizer, llm_model_name
     np.random.seed(int(seed))
     torch.manual_seed(int(seed))
 
@@ -188,7 +203,7 @@ def chat_fn(message: str, history: list, seed: int, temperature: float, top_p: f
     conversation.append({"role": "user", "content": message})
     # Load the model if it is not loaded
     if not llm_model:
-        load_llm_model(llm_name)
+        load_llm_model(llm_model_name)
     memory_management.load_models_to_gpu(llm_model)
 
     input_ids = llm_tokenizer.apply_chat_template(
@@ -361,17 +376,21 @@ def diffusion_fn(chatbot, canvas_outputs, num_samples, seed, image_width, image_
 
 
 def update_model_list():
-    model_list = list_models('./models/checkpoints', '.safetensors')
+    model_list, default_model = list_models(False)
+    if loaded_pipeline and loaded_pipeline in [path for name, path in model_list]:
+        default_model = loaded_pipeline
     options = [(model, path) for model, path in model_list]
     paths = {model: path for model, path in model_list}
-    return gr.Dropdown.update(choices=options, value=options[0][0] if options else ""), paths
+    return gr.update(choices=options, value=default_model if options else ""), paths
 
 
 def update_llm_list():
-    llm_list = list_models('./models/llm')
+    llm_list, default_llm = list_models(True)
+    if llm_model and llm_model_name and llm_model_name in [name for name, path in llm_list]:
+        default_llm = llm_model_name
     options = [(os.path.basename(path), path) for name, path in llm_list]
     paths = {os.path.basename(path): path for name, path in llm_list}
-    return gr.Dropdown.update(choices=options, value=options[0][0] if options else ""), paths
+    return gr.update(choices=options, value=default_llm if options else ""), paths
 
 
 css = '''
@@ -420,7 +439,10 @@ with gr.Blocks(
                         step=1,
                         value=4096,
                         label="Max New Tokens")
-                    llm_select = gr.Dropdown(label="Select LLM Model", value=llm_name, choices=[(llm_name, llm_name)], interactive=True)
+                    llm_models, selected = list_models(True)
+                    llm_model_name = selected
+                    llm_select = gr.Dropdown(label="Select LLM Model", value=selected, choices=llm_models,
+                                             interactive=True)
                     llm_refresh_btn = gr.Button("Refresh LLM List", variant="secondary", size="sm", min_width=60)
             with gr.Accordion(open=True, label='Image Diffusion Model'):
                 with gr.Group():
@@ -431,8 +453,10 @@ with gr.Blocks(
                     with gr.Row():
                         num_samples = gr.Slider(label="Image Number", minimum=1, maximum=12, value=1, step=1)
                         steps = gr.Slider(label="Sampling Steps", minimum=1, maximum=100, value=25, step=1)
-                    model_select = gr.Dropdown(label="Select Model", choices=list_models('./models/checkpoints', '.safetensors'),
-                                               interactive=True, value=list_models('./models/checkpoints', '.safetensors')[0][0])
+                    checkpoint_list, selected = list_models(False)
+
+                    model_select = gr.Dropdown(label="Select Model", choices=checkpoint_list, interactive=True,
+                                               value=selected)
                     model_refresh_btn = gr.Button("Refresh Model List", variant="secondary", size="sm", min_width=60)
 
             with gr.Accordion(open=False, label='Advanced'):
