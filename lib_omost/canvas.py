@@ -1,5 +1,10 @@
+import ast
 import re
 import difflib
+from abc import ABC, abstractmethod
+from types import FunctionType
+from typing import Self
+
 import numpy as np
 
 system_prompt = r'''You are a helpful AI assistant to compose images using the below python class `Canvas`:
@@ -105,6 +110,8 @@ valid_areas = {  # w, h in 90*90
 
 
 def closest_name(input_str, options):
+    assert isinstance(input_str, str)
+
     input_str = input_str.lower()
 
     closest_match = difflib.get_close_matches(input_str, list(options.keys()), n=1, cutoff=0.5)
@@ -127,17 +134,102 @@ def binary_nonzero_positions(n, offset=0):
     return positions
 
 
-class Canvas:
-    @staticmethod
-    def from_bot_response(response: str):
-        matched = re.search(r'```python\n(.*?)\n```', response, re.DOTALL)
-        assert matched, 'Response does not contain codes!'
+class UnsupportedCodeError(Exception):
+    pass
+
+
+class CanvasBase(ABC):
+
+    @abstractmethod
+    def set_global_description(
+        self,
+        description: str,
+        detailed_descriptions: list[str],
+        tags: str,
+        HTML_web_color_name: str,
+    ) -> None:
+        raise NotImplementedError
+
+    @abstractmethod
+    def add_local_description(
+        self,
+        location: str,
+        offset: str,
+        area: str,
+        distance_to_viewer: float,
+        description: str,
+        detailed_descriptions: list[str],
+        tags: str,
+        atmosphere: str,
+        style: str,
+        quality_meta: str,
+        HTML_web_color_name: str,
+    ) -> None:
+        raise NotImplementedError
+
+
+CANVAS_BASE_METHODS = [
+    name for name, attr in CanvasBase.__dict__.items() if isinstance(attr, FunctionType)
+]
+
+
+class Canvas(CanvasBase):
+
+    @classmethod
+    def from_bot_response(cls, response: str) -> Self:
+        matched = re.search(r"```python\n(.*?)\n```", response, re.DOTALL)
+        assert matched, "Response does not contain codes!"
         code_content = matched.group(1)
-        assert 'canvas = Canvas()' in code_content, 'Code block must include valid canvas var!'
-        local_vars = {'Canvas': Canvas}
-        exec(code_content, {}, local_vars)
-        canvas = local_vars.get('canvas', None)
-        assert isinstance(canvas, Canvas), 'Code block must produce valid canvas var!'
+        canvas = cls.from_code(code_content)
+        return canvas
+
+    @classmethod
+    def from_code(cls, code: str) -> Self:
+        method_calls = []
+
+        match ast.parse(code):
+            case ast.Module(
+                [
+                    ast.Assign(
+                        [ast.Name(canvas_var_name)],
+                        ast.Call(ast.Name(cls_name), [], []),
+                    ),
+                    *stmts,
+                ]
+            ) if cls_name == cls.__name__:
+                for stmt in stmts:
+                    match stmt:
+                        case ast.Expr(
+                            ast.Call(
+                                ast.Attribute(ast.Name(obj_name), method_name),
+                                [*parsed_args],
+                                [*parsed_kwargs],
+                            )
+                        ) if obj_name == canvas_var_name and method_name in CANVAS_BASE_METHODS:
+                            args = []
+                            for parsed_arg in parsed_args:
+                                match parsed_arg:
+                                    case ast.Starred(value):
+                                        args += ast.literal_eval(value)
+                                    case _:
+                                        args.append(ast.literal_eval(parsed_arg))
+                            kwargs = {}
+                            # Non-compliant with Python: repeated keyword args are allowed and merged using "the last wins" rule
+                            for parsed_kwarg in parsed_kwargs:
+                                match parsed_kwarg:
+                                    case ast.keyword(None, value):
+                                        kwargs |= ast.literal_eval(value)
+                                    case ast.keyword(key, value):
+                                        kwargs[key] = ast.literal_eval(value)
+                            method_calls.append((method_name, args, kwargs))
+                        case _:
+                            raise UnsupportedCodeError
+            case _:
+                raise UnsupportedCodeError
+
+        canvas = cls()
+        for method_name, args, kwargs in method_calls:
+            getattr(canvas, method_name)(*args, **kwargs)
         return canvas
 
     def __init__(self):
@@ -148,8 +240,13 @@ class Canvas:
         self.suffixes = []
         return
 
-    def set_global_description(self, description: str, detailed_descriptions: list[str], tags: str,
-                               HTML_web_color_name: str):
+    def set_global_description(
+        self,
+        description: str,
+        detailed_descriptions: list[str],
+        tags: str,
+        HTML_web_color_name: str,
+    ) -> None:
         assert isinstance(description, str), 'Global description is not valid!'
         assert isinstance(detailed_descriptions, list) and all(isinstance(item, str) for item in detailed_descriptions), \
             'Global detailed_descriptions is not valid!'
@@ -169,9 +266,20 @@ class Canvas:
 
         return
 
-    def add_local_description(self, location: str, offset: str, area: str, distance_to_viewer: float, description: str,
-                              detailed_descriptions: list[str], tags: str, atmosphere: str, style: str,
-                              quality_meta: str, HTML_web_color_name: str):
+    def add_local_description(
+        self,
+        location: str,
+        offset: str,
+        area: str,
+        distance_to_viewer: float,
+        description: str,
+        detailed_descriptions: list[str],
+        tags: str,
+        atmosphere: str,
+        style: str,
+        quality_meta: str,
+        HTML_web_color_name: str,
+    ) -> None:
         assert isinstance(description, str), 'Local description is wrong!'
         assert isinstance(distance_to_viewer, (int, float)) and distance_to_viewer > 0, \
             f'The distance_to_viewer for [{description}] is not positive float number!'

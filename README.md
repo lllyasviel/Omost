@@ -18,7 +18,7 @@ Or, you can use the below deployment (requires 8GB Nvidia VRAM):
 
     git clone https://github.com/lllyasviel/Omost.git
     cd Omost
-    conda create -n omost python=3.10
+    conda create -n omost python=3.11
     conda activate omost
     pip install torch torchvision --index-url https://download.pytorch.org/whl/cu121
     pip install -r requirements.txt
