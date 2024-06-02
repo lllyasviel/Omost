@@ -643,8 +643,12 @@ Also read ...
 
 [(RPG-DiffusionMaster) Mastering Text-to-Image Diffusion: Recaptioning, Planning, and Generating with Multimodal LLMs](https://github.com/YangLing0818/RPG-DiffusionMaster)
 
+[LLM-grounded Diffusion: Enhancing Prompt Understanding of Text-to-Image Diffusion Models with Large Language Models](https://arxiv.org/abs/2305.13655) and [Self-correcting LLM-controlled Diffusion Models](https://arxiv.org/abs/2311.16090)
+
 [MultiDiffusion: Fusing Diffusion Paths for Controlled Image Generation](https://multidiffusion.github.io/)
 
 [sd-webui-regional-prompter](https://github.com/hako-mikan/sd-webui-regional-prompter)
+
+(please open issue or email me if you want to add more links here)
 
 
