@@ -166,3 +166,4 @@ cython_debug/
 # Ignore everything in ./models recursively if it's not a .placeholder file
 /models/**
 !/models/**/.placeholder
+outputs/*
