@@ -15,7 +15,7 @@ from transformers.models.phi3.modeling_phi3 import Phi3PreTrainedModel
 
 from PIL import Image
 from transformers import AutoModelForCausalLM, AutoTokenizer, TextIteratorStreamer
-from diffusers import AutoencoderKL, UNet2DConditionModel, StableDiffusionXLPipeline
+from diffusers import AutoencoderKL, UNet2DConditionModel, StableDiffusionXLPipeline, StableDiffusionXLImg2ImgPipeline
 from diffusers.models.attention_processor import AttnProcessor2_0
 from transformers import CLIPTextModel, CLIPTokenizer
 from lib_omost.pipeline import StableDiffusionXLOmostPipeline
@@ -61,6 +61,7 @@ def list_models(folder_path, file_extension=None):
             if file_extension:
                 for file in files:
                     if file.endswith(file_extension):
+                        print(f"Found model: {file}")
                         full_path = os.path.join(root, file)
                         models.append((file, full_path))
             else:
@@ -68,6 +69,7 @@ def list_models(folder_path, file_extension=None):
                 for model_dir in dirs:
                     full_path = os.path.join(root, model_dir)
                     models.append((model_dir, full_path))
+                    print(f"Found model: {model_dir}")
     else:
         print(f"Folder does not exist: {folder_path}")
     return models
@@ -78,7 +80,7 @@ def load_pipeline(model_path):
     global tokenizer, tokenizer_2, text_encoder, text_encoder_2, vae, unet, pipeline
 
     if model_path.endswith('.safetensors'):
-        temp_pipeline = StableDiffusionXLPipeline.from_single_file(model_path)
+        temp_pipeline = StableDiffusionXLImg2ImgPipeline.from_single_file(model_path)
 
         tokenizer = temp_pipeline.tokenizer
         tokenizer_2 = temp_pipeline.tokenizer_2
@@ -249,9 +251,11 @@ def post_chat(history):
 
 @torch.inference_mode()
 def diffusion_fn(chatbot, canvas_outputs, num_samples, seed, image_width, image_height,
-                 highres_scale, steps, cfg, highres_steps, highres_denoise, negative_prompt):
+                 highres_scale, steps, cfg, highres_steps, highres_denoise, negative_prompt, model_selection):
     use_initial_latent = False
     eps = 0.05
+    # Load the model
+    load_pipeline(model_selection)
     if not isinstance(pipeline, StableDiffusionXLOmostPipeline):
         raise ValueError("Pipeline is not StableDiffusionXLOmostPipeline")
 
@@ -471,7 +475,7 @@ with gr.Blocks(
         fn=diffusion_fn, inputs=[
             chatInterface.chatbot, canvas_state,
             num_samples, seed, image_width, image_height, highres_scale,
-            steps, cfg, highres_steps, highres_denoise, n_prompt
+            steps, cfg, highres_steps, highres_denoise, n_prompt, model_select
         ], outputs=[chatInterface.chatbot]).then(
         fn=lambda x: x, inputs=[
             chatInterface.chatbot
