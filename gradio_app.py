@@ -86,7 +86,7 @@ def list_models(llm: bool = False):
                 for file in files:
                     if file.endswith(".safetensors"):
                         full_path = os.path.join(root, file)
-                        models.append((file, full_path))
+                        models.append((file.replace(".safetensors", ""), full_path))
             else:
                 # Append dirs
                 for model_dir in dirs:
