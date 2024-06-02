@@ -36,6 +36,7 @@ parser.add_argument("--llm_name", type=str, default='lllyasviel/omost-llama-3-8b
 parser.add_argument("--checkpoints_folder", type=str,
                     default=os.path.join(os.path.dirname(__file__), "models", "checkpoints"))
 parser.add_argument("--llm_folder", type=str, default=os.path.join(os.path.dirname(__file__), "models", "llm"))
+parser.add_argument("--outputs_folder", type=str, default=os.path.join(os.path.dirname(__file__), "outputs"))
 args = parser.parse_args()
 
 DEFAULT_CHECKPOINTS = {
@@ -64,6 +65,8 @@ loaded_pipeline = None
 llm_model = None
 llm_model_name = None
 llm_tokenizer = None
+
+os.makedirs(args.outputs_folder, exist_ok=True)
 
 
 def list_models(llm: bool = False):
@@ -190,6 +193,8 @@ def resize_without_crop(image, target_width, target_height):
 @torch.inference_mode()
 def chat_fn(message: str, history: list, seed: int, temperature: float, top_p: float, max_new_tokens: int) -> str:
     global llm_model, llm_tokenizer, llm_model_name
+    if seed == -1:
+        seed = np.random.randint(0, 2 ** 32 - 1)
     np.random.seed(int(seed))
     torch.manual_seed(int(seed))
 
@@ -281,7 +286,8 @@ def diffusion_fn(chatbot, canvas_outputs, num_samples, seed, image_width, image_
         raise ValueError("UNet is not UNet2DConditionModel")
 
     image_width, image_height = int(image_width // 64) * 64, int(image_height // 64) * 64
-
+    if seed == -1:
+        seed = np.random.randint(0, 2 ** 32 - 1)
     rng = torch.Generator(device=memory_management.gpu).manual_seed(seed)
 
     memory_management.load_models_to_gpu([text_encoder, text_encoder_2])
@@ -367,7 +373,7 @@ def diffusion_fn(chatbot, canvas_outputs, num_samples, seed, image_width, image_
 
     for i in range(len(pixels)):
         unique_hex = uuid.uuid4().hex
-        image_path = os.path.join(gradio_temp_dir, f"{unique_hex}_{i}.png")
+        image_path = os.path.join(args.outputs_folder, f"{unique_hex}_{i}.png")
         image = Image.fromarray(pixels[i])
         image.save(image_path)
         chatbot = chatbot + [(None, (image_path, 'image'))]
@@ -416,7 +422,7 @@ with gr.Blocks(
                 undo_btn = gr.Button("✏️️ Edit Last Input", variant="secondary", size="sm", min_width=60,
                                      interactive=False)
 
-            seed = gr.Number(label="Random Seed", value=12345, precision=0)
+            seed = gr.Number(label="Random Seed", value=-1, precision=0)
 
             with gr.Accordion(open=True, label='Language Model'):
                 with gr.Group():
