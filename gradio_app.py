@@ -106,6 +106,12 @@ def load_pipeline(model_path):
     global tokenizer, tokenizer_2, text_encoder, text_encoder_2, vae, unet, pipeline, loaded_pipeline
     if pipeline is not None and loaded_pipeline == model_path:
         return
+    if pipeline:
+        models_to_delete = [tokenizer, tokenizer_2, text_encoder, text_encoder_2, vae, unet, pipeline]
+        for model in models_to_delete:
+            if model:
+                del model
+        torch.cuda.empty_cache()
     print(f"Loading model from {model_path}")
 
     if model_path.endswith('.safetensors'):
@@ -149,6 +155,11 @@ def load_llm_model(model_name):
     global llm_model, llm_tokenizer, llm_model_name
     if llm_model_name == model_name and llm_model:
         return
+    if llm_model:
+        del llm_model
+    if llm_tokenizer:
+        del llm_tokenizer
+    torch.cuda.empty_cache()
     print(f"Loading LLM model from {model_name}")
 
     llm_model = AutoModelForCausalLM.from_pretrained(
