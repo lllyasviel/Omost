@@ -102,7 +102,7 @@ def list_models(llm: bool = False):
     return models, default_model
 
 
-def load_pipeline(model_path):
+def load_pipeline(model_path, do_unload: bool = True):
     global tokenizer, tokenizer_2, text_encoder, text_encoder_2, vae, unet, pipeline, loaded_pipeline
     if pipeline is not None and loaded_pipeline == model_path:
         return
@@ -147,11 +147,11 @@ def load_pipeline(model_path):
         scheduler=None,  # We completely give up diffusers sampling system and use A1111's method
     )
     loaded_pipeline = model_path
+    if do_unload:
+        memory_management.unload_all_models([text_encoder, text_encoder_2, vae, unet])
 
-    memory_management.unload_all_models([text_encoder, text_encoder_2, vae, unet])
 
-
-def load_llm_model(model_name):
+def load_llm_model(model_name, do_unload: bool = True):
     global llm_model, llm_tokenizer, llm_model_name
     if llm_model_name == model_name and llm_model:
         return
@@ -173,8 +173,8 @@ def load_llm_model(model_name):
         token=HF_TOKEN
     )
     llm_model_name = model_name
-
-    memory_management.unload_all_models(llm_model)
+    if do_unload:
+        memory_management.unload_all_models(llm_model)
 
 
 @torch.inference_mode()
@@ -219,7 +219,7 @@ def chat_fn(message: str, history: list, seed: int, temperature: float, top_p: f
     conversation.append({"role": "user", "content": message})
     # Load the model if it is not loaded
     if not llm_model:
-        load_llm_model(llm_model_name)
+        load_llm_model(llm_model_name, False)
     memory_management.load_models_to_gpu(llm_model)
 
     input_ids = llm_tokenizer.apply_chat_template(
@@ -286,7 +286,7 @@ def diffusion_fn(chatbot, canvas_outputs, num_samples, seed, image_width, image_
     use_initial_latent = False
     eps = 0.05
     # Load the model
-    load_pipeline(model_selection)
+    load_pipeline(model_selection, False)
     if not isinstance(pipeline, StableDiffusionXLOmostPipeline):
         raise ValueError("Pipeline is not StableDiffusionXLOmostPipeline")
 
