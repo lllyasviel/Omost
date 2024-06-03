@@ -12,7 +12,7 @@ All models are trained with mixed data of (1) ground-truth annotations of severa
 
 # Get Started
 
-You can just use the [official HuggingFace space](https://huggingface.co/spaces/lllyasviel/Omost).
+You can just use the [official HuggingFace space](https://huggingface.co/spaces/lllyasviel/Omost).   
 Try the Replicate demo here [![Replicate](https://replicate.com/chenxwh/omost/badge)](https://replicate.com/chenxwh/omost) 
 
 Or, you can use the below deployment (requires 8GB Nvidia VRAM):
