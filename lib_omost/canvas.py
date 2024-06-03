@@ -1,6 +1,8 @@
 import re
 import difflib
 import numpy as np
+from typing import TypedDict
+
 
 system_prompt = r'''You are a helpful AI assistant to compose images using the below python class `Canvas`:
 
@@ -127,6 +129,17 @@ def binary_nonzero_positions(n, offset=0):
     return positions
 
 
+class OmostCanvasCondition(TypedDict):
+    mask: np.ndarray
+    prefixes: list[str]
+    suffixes: list[str]
+
+
+class OmostCanvasOutput(TypedDict):
+    initial_latent: np.ndarray
+    bag_of_conditions: list[OmostCanvasCondition]
+
+
 class Canvas:
     @staticmethod
     def from_bot_response(response: str):
@@ -213,7 +226,7 @@ class Canvas:
 
         return
 
-    def process(self):
+    def process(self) -> OmostCanvasOutput:
         # sort components
         self.components = sorted(self.components, key=lambda x: x['distance_to_viewer'], reverse=True)
 
