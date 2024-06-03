@@ -66,6 +66,19 @@ pipeline = StableDiffusionXLOmostPipeline(
 
 memory_management.unload_all_models([text_encoder, text_encoder_2, vae, unet])
 
+# Function to set seed
+def set_seed():
+    seed = random.randint(0, 2**32 - 1)
+    torch.manual_seed(seed)
+    np.random.seed(seed)
+    random.seed(seed)
+    return seed
+
+# Example usage in the Gradio interface
+def generate(*args):
+    seed = set_seed()
+    #print(f"Using seed in generate function: {seed}")
+    return seed
 # LLM
 
 # llm_name = 'lllyasviel/omost-phi-3-mini-128k-8bits'
@@ -302,7 +315,10 @@ with gr.Blocks(
                 undo_btn = gr.Button("✏️️ Edit Last Input", variant="secondary", size="sm", min_width=60, interactive=False)
 
             seed = gr.Number(label="Random Seed", value=12345, precision=0)
+            random_seed = gr.Button("Random Seed")
 
+            # Add click event for the random seed button
+            random_seed.click(generate, inputs=[], outputs=[seed])
             with gr.Accordion(open=True, label='Language Model'):
                 with gr.Group():
                     with gr.Row():
