@@ -1,3 +1,4 @@
+#imported numpy 
 import numpy as np
 import copy
 
