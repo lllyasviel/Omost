@@ -1,13 +1,19 @@
 import torch
 from contextlib import contextmanager
 
+import platform
+is_mac = platform.system() == 'Darwin'
 
 high_vram = False
-gpu = torch.device('cuda')
+if is_mac:
+    gpu = torch.device('mps')
+else:
+    gpu = torch.device('cuda')
 cpu = torch.device('cpu')
 
 torch.zeros((1, 1)).to(gpu, torch.float32)
-torch.cuda.empty_cache()
+
+torch.cuda.empty_cache() if not is_mac else torch.mps.empty_cache()
 
 models_in_gpu = []
 
@@ -27,6 +33,8 @@ def movable_bnb_model(m):
 
 
 def load_models_to_gpu(models):
+    if is_mac: return
+
     global models_in_gpu
 
     if not isinstance(models, (tuple, list)):
@@ -49,7 +57,7 @@ def load_models_to_gpu(models):
         print('Load to GPU:', m.__class__.__name__)
 
     models_in_gpu = list(set(models_in_gpu + models))
-    torch.cuda.empty_cache()
+    torch.cuda.empty_cache() if not is_mac else torch.mps.empty_cache()
     return
 
 

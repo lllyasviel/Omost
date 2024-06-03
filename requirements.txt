@@ -1,7 +1,8 @@
 diffusers==0.28.0
 transformers==4.41.1
 gradio==4.31.5
-bitsandbytes==0.43.1
+mlx-lm==0.14.1; sys_platform == 'darwin'
+bitsandbytes==0.43.1; sys_platform != 'darwin'
 accelerate==0.30.1
 protobuf==3.20
 opencv-python

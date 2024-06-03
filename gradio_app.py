@@ -1,4 +1,6 @@
 import os
+import platform
+is_mac = platform.system() == 'Darwin'
 
 os.environ['HF_HOME'] = os.path.join(os.path.dirname(__file__), 'hf_download')
 HF_TOKEN = None
@@ -10,6 +12,8 @@ import torch
 import numpy as np
 import gradio as gr
 import tempfile
+if is_mac:
+    import mlx_lm
 
 gradio_temp_dir = os.path.join(tempfile.gettempdir(), 'gradio')
 os.makedirs(gradio_temp_dir, exist_ok=True)
@@ -32,6 +36,9 @@ from transformers.generation.stopping_criteria import StoppingCriteriaList
 
 import lib_omost.canvas as omost_canvas
 
+# https://medium.com/@natsunoyuki/using-civitai-models-with-diffusers-package-45e0c475a67e
+# https://huggingface.co/docs/diffusers/en/api/loaders/single_file
+# https://github.com/huggingface/diffusers/blob/v0.28.0/scripts/convert_original_stable_diffusion_to_diffusers.py
 
 # SDXL
 
@@ -67,25 +74,27 @@ pipeline = StableDiffusionXLOmostPipeline(
 memory_management.unload_all_models([text_encoder, text_encoder_2, vae, unet])
 
 # LLM
+if is_mac:
+    # llm_name = "mlx-community/Phi-3-mini-128k-instruct-8bit"
+    llm_name = "mlx-community/Meta-Llama-3-8B-4bit"
+    # llm_name = "mlx-community/dolphin-2.9.1-llama-3-8b-4bit"
+    llm_model, llm_tokenizer = mlx_lm.load(llm_name)
+else:
+    # llm_name = 'lllyasviel/omost-phi-3-mini-128k-8bits'
+    llm_name = 'lllyasviel/omost-llama-3-8b-4bits'
+    # llm_name = 'lllyasviel/omost-dolphin-2.9-llama3-8b-4bits'
 
-# llm_name = 'lllyasviel/omost-phi-3-mini-128k-8bits'
-llm_name = 'lllyasviel/omost-llama-3-8b-4bits'
-# llm_name = 'lllyasviel/omost-dolphin-2.9-llama3-8b-4bits'
+    llm_model = AutoModelForCausalLM.from_pretrained(
+        llm_name,
+        torch_dtype=torch.bfloat16,  # This is computation type, not load/memory type. The loading quant type is baked in config.
+        token=HF_TOKEN
+    )
+    llm_tokenizer = AutoTokenizer.from_pretrained(
+        llm_name,
+        token=HF_TOKEN
+    )
 
-llm_model = AutoModelForCausalLM.from_pretrained(
-    llm_name,
-    torch_dtype=torch.bfloat16,  # This is computation type, not load/memory type. The loading quant type is baked in config.
-    token=HF_TOKEN,
-    device_map="auto"  # This will load model to gpu with an offload system
-)
-
-llm_tokenizer = AutoTokenizer.from_pretrained(
-    llm_name,
-    token=HF_TOKEN
-)
-
-memory_management.unload_all_models(llm_model)
-
+    memory_management.unload_all_models(llm_model)
 
 @torch.inference_mode()
 def pytorch2numpy(imgs):
@@ -111,6 +120,26 @@ def resize_without_crop(image, target_width, target_height):
     return np.array(resized_image)
 
 
+def llm_generate(kwargs):
+    if not is_mac: return llm_model.generate
+    return (lambda kwargs: mlx_lm.generate(llm_model, llm_tokenizer, prompt, temp, max_tokens, verbose, formatter, repetition_penalty, repetition_context_size, top_p, logit_bias))
+# generate(model: mlx.nn.layers.base.Module, tokenizer: Union[transformers.tokenization_utils.PreTrainedTokenizer, mlx_lm.tokenizer_utils.TokenizerWrapper], prompt: str, temp: float = 0.0, max_tokens: int = 100, verbose: bool = False, formatter: Optional[Callable] = None, repetition_penalty: Optional[float] = None, repetition_context_size: Optional[int] = None, top_p: float = 1.0, logit_bias: Optional[Dict[int, float]] = None) -> str
+#     Generate text from the model.
+    
+#     Args:
+#        model (nn.Module): The language model.
+#        tokenizer (PreTrainedTokenizer): The tokenizer.
+#        prompt (str): The string prompt.
+#        temp (float): The temperature for sampling (default 0).
+#        max_tokens (int): The maximum number of tokens (default 100).
+#        verbose (bool): If ``True``, print tokens and timing information
+#            (default ``False``).
+#        formatter (Optional[Callable]): A function which takes a token and a
+#            probability and displays it.
+#        repetition_penalty (float, optional): The penalty factor for repeating tokens.
+#        repetition_context_size (int, optional): The number of tokens to consider for repetition penalty.
+
+
 @torch.inference_mode()
 def chat_fn(message: str, history: list, seed:int, temperature: float, top_p: float, max_new_tokens: int) -> str:
     np.random.seed(int(seed))
@@ -126,9 +155,9 @@ def chat_fn(message: str, history: list, seed:int, temperature: float, top_p: fl
     conversation.append({"role": "user", "content": message})
 
     memory_management.load_models_to_gpu(llm_model)
-
+    
     input_ids = llm_tokenizer.apply_chat_template(
-        conversation, return_tensors="pt", add_generation_prompt=True).to(llm_model.device)
+        conversation, return_tensors="pt", add_generation_prompt=True).to( getattr(llm_model, 'device', memory_management.gpu) )
 
     streamer = TextIteratorStreamer(llm_tokenizer, timeout=10.0, skip_prompt=True, skip_special_tokens=True)
 
@@ -158,7 +187,7 @@ def chat_fn(message: str, history: list, seed:int, temperature: float, top_p: fl
     if temperature == 0:
         generate_kwargs['do_sample'] = False
 
-    Thread(target=llm_model.generate, kwargs=generate_kwargs).start()
+    Thread(target=llm_generate, kwargs=generate_kwargs).start()
 
     outputs = []
     for text in streamer:
