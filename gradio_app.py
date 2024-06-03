@@ -1,5 +1,6 @@
 import argparse
 import os
+import sys
 import tempfile
 import uuid
 from threading import Thread
@@ -205,7 +206,10 @@ def resize_without_crop(image, target_width, target_height):
 def chat_fn(message: str, history: list, seed: int, temperature: float, top_p: float, max_new_tokens: int) -> str:
     global llm_model, llm_tokenizer, llm_model_name
     if seed == -1:
-        seed = np.random.randint(0, 2 ** 32 - 1)
+        if sys.maxsize > 2 ** 32:
+            seed = np.random.randint(0, 2 ** 32 - 1)
+        else:
+            seed = np.random.randint(0, 2 ** 31 - 1)
     np.random.seed(int(seed))
     torch.manual_seed(int(seed))
 
@@ -298,7 +302,10 @@ def diffusion_fn(chatbot, canvas_outputs, num_samples, seed, image_width, image_
 
     image_width, image_height = int(image_width // 64) * 64, int(image_height // 64) * 64
     if seed == -1:
-        seed = np.random.randint(0, 2 ** 32 - 1)
+        if sys.maxsize > 2 ** 32:
+            seed = np.random.randint(0, 2 ** 32 - 1)
+        else:
+            seed = np.random.randint(0, 2 ** 31 - 1)
     rng = torch.Generator(device=memory_management.gpu).manual_seed(seed)
 
     memory_management.load_models_to_gpu([text_encoder, text_encoder_2])
