@@ -62,6 +62,8 @@ def load_models_to_gpu(models):
 
 
 def unload_all_models(extra_models=None):
+    if is_mac: return
+
     global models_in_gpu
 
     if extra_models is None:

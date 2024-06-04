@@ -14,6 +14,8 @@ import gradio as gr
 import tempfile
 if is_mac:
     import mlx_lm
+    # from mlx_lm import load, stream_generate
+
 
 gradio_temp_dir = os.path.join(tempfile.gettempdir(), 'gradio')
 os.makedirs(gradio_temp_dir, exist_ok=True)
@@ -94,7 +96,7 @@ else:
         token=HF_TOKEN
     )
 
-    memory_management.unload_all_models(llm_model)
+memory_management.unload_all_models(llm_model)
 
 @torch.inference_mode()
 def pytorch2numpy(imgs):
@@ -118,27 +120,6 @@ def resize_without_crop(image, target_width, target_height):
     pil_image = Image.fromarray(image)
     resized_image = pil_image.resize((target_width, target_height), Image.LANCZOS)
     return np.array(resized_image)
-
-
-def llm_generate(kwargs):
-    if not is_mac: return llm_model.generate
-    return (lambda kwargs: mlx_lm.generate(llm_model, llm_tokenizer, prompt, temp, max_tokens, verbose, formatter, repetition_penalty, repetition_context_size, top_p, logit_bias))
-# generate(model: mlx.nn.layers.base.Module, tokenizer: Union[transformers.tokenization_utils.PreTrainedTokenizer, mlx_lm.tokenizer_utils.TokenizerWrapper], prompt: str, temp: float = 0.0, max_tokens: int = 100, verbose: bool = False, formatter: Optional[Callable] = None, repetition_penalty: Optional[float] = None, repetition_context_size: Optional[int] = None, top_p: float = 1.0, logit_bias: Optional[Dict[int, float]] = None) -> str
-#     Generate text from the model.
-    
-#     Args:
-#        model (nn.Module): The language model.
-#        tokenizer (PreTrainedTokenizer): The tokenizer.
-#        prompt (str): The string prompt.
-#        temp (float): The temperature for sampling (default 0).
-#        max_tokens (int): The maximum number of tokens (default 100).
-#        verbose (bool): If ``True``, print tokens and timing information
-#            (default ``False``).
-#        formatter (Optional[Callable]): A function which takes a token and a
-#            probability and displays it.
-#        repetition_penalty (float, optional): The penalty factor for repeating tokens.
-#        repetition_context_size (int, optional): The number of tokens to consider for repetition penalty.
-
 
 @torch.inference_mode()
 def chat_fn(message: str, history: list, seed:int, temperature: float, top_p: float, max_new_tokens: int) -> str:
@@ -187,13 +168,19 @@ def chat_fn(message: str, history: list, seed:int, temperature: float, top_p: fl
     if temperature == 0:
         generate_kwargs['do_sample'] = False
 
-    Thread(target=llm_generate, kwargs=generate_kwargs).start()
 
     outputs = []
-    for text in streamer:
-        outputs.append(text)
-        # print(outputs)
-        yield "".join(outputs), interrupter
+    if is_mac:
+        for text in mlx_lm.stream_generate(llm_model, llm_tokenizer, input_ids.cpu().numpy(), temp=temperature, top_p=top_p):
+            outputs.append(text)
+            # print(outputs)
+            yield "".join(outputs), interrupter
+    else:
+        Thread(target=llm_model.generate, kwargs=generate_kwargs).start()
+        for text in streamer:
+            outputs.append(text)
+            # print(outputs)
+            yield "".join(outputs), interrupter
 
     return
 
