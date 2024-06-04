@@ -69,9 +69,9 @@ memory_management.unload_all_models([text_encoder, text_encoder_2, vae, unet])
 
 # LLM
 
-# model_name = 'lllyasviel/omost-phi-3-mini-128k-8bits'
+# llm_name = 'lllyasviel/omost-phi-3-mini-128k-8bits'
 llm_name = 'lllyasviel/omost-llama-3-8b-4bits'
-# model_name = 'lllyasviel/omost-dolphin-2.9-llama3-8b-4bits'
+# llm_name = 'lllyasviel/omost-dolphin-2.9-llama3-8b-4bits'
 
 llm_model = AutoModelForCausalLM.from_pretrained(
     llm_name,
@@ -120,9 +120,9 @@ def chat_fn(message: str, history: list, seed:int, temperature: float, top_p: fl
     conversation = [{"role": "system", "content": omost_canvas.system_prompt}]
 
     for user, assistant in history:
-        if user is None or assistant is None:
-            continue
-        conversation.extend([{"role": "user", "content": user}, {"role": "assistant", "content": assistant}])
+        if isinstance(user, str) and isinstance(assistant, str):
+            if len(user) > 0 and len(assistant) > 0:
+                conversation.extend([{"role": "user", "content": user}, {"role": "assistant", "content": assistant}])
 
     conversation.append({"role": "user", "content": message})
 
