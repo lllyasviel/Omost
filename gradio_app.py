@@ -10,6 +10,7 @@ import torch
 import numpy as np
 import gradio as gr
 import tempfile
+import argparse
 
 gradio_temp_dir = os.path.join(tempfile.gettempdir(), 'gradio')
 os.makedirs(gradio_temp_dir, exist_ok=True)
@@ -379,4 +380,9 @@ with gr.Blocks(
         ], outputs=[chatInterface.chatbot_state])
 
 if __name__ == "__main__":
-    demo.queue().launch(inbrowser=True, server_name='0.0.0.0')
+    # command line arguments
+    parser = argparse.ArgumentParser(description='Run the Omost')
+    parser.add_argument('--share', action='store_true', help='Share the app on Gradio')
+    args = parser.parse_args()
+
+    demo.queue().launch(inbrowser=True, server_name='0.0.0.0', share=args.share)
