@@ -1,9 +1,12 @@
+import torch
 import numpy as np
 import copy
 
 from tqdm.auto import trange
 from diffusers.pipelines.stable_diffusion_xl.pipeline_stable_diffusion_xl_img2img import *
 from diffusers.models.transformers import Transformer2DModel
+from diffusers.models.embeddings import ImageProjection
+from diffusers.utils import load_image
 
 
 original_Transformer2DModel_forward = Transformer2DModel.forward
@@ -467,6 +470,8 @@ class StableDiffusionXLOmostPipeline(StableDiffusionXLImg2ImgPipeline, IPAdapter
         pooled_prompt_embeds = pooled_prompt_embeds.repeat(batch_size, 1).to(noise)
         negative_pooled_prompt_embeds = negative_pooled_prompt_embeds.repeat(batch_size, 1).to(noise)
 
+        # TODO: Replace with input argument
+        ip_adapter_image = load_image("https://huggingface.co/datasets/huggingface/documentation-images/resolve/main/diffusers/ip_adapter_diner.png")
 
         if ip_adapter_image is not None or ip_adapter_image_embeds is not None:
             image_embeds = self.prepare_ip_adapter_image_embeds(
@@ -474,7 +479,7 @@ class StableDiffusionXLOmostPipeline(StableDiffusionXLImg2ImgPipeline, IPAdapter
                 ip_adapter_image_embeds,
                 device,
                 batch_size * num_images_per_prompt,
-                self.do_classifier_free_guidance,
+                False # TODO: Add self.do_classifier_free_guidance,
             )
 
         # Feeds
