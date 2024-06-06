@@ -23,7 +23,7 @@ Phi3PreTrainedModel._supports_sdpa = True
 
 from PIL import Image
 from transformers import AutoModelForCausalLM, AutoTokenizer, TextIteratorStreamer
-from diffusers import AutoencoderKL, UNet2DConditionModel
+from diffusers import AutoencoderKL, UNet2DConditionModel, StableDiffusionXLPipeline
 from diffusers.models.attention_processor import AttnProcessor2_0
 from transformers import CLIPTextModel, CLIPTokenizer
 from lib_omost.pipeline import StableDiffusionXLOmostPipeline
@@ -35,21 +35,46 @@ import lib_omost.canvas as omost_canvas
 
 # SDXL
 
-sdxl_name = 'SG161222/RealVisXL_V4.0'
+# sdxl_name = 'SG161222/RealVisXL_V4.0'
+
+use_local_model = True
+sdxl_name = "base/sd_xl_base_1.0"
+
+if use_local_model:
+    try:
+        base_model_dir = os.environ["SDXL_MODELS_DIR"]
+    except KeyError:
+        print("Please set the SDXL_MODELS_DIR environment variable, e.g. /path/to/ComfyUI/models/checkpoints/")
+    model_file = f"{base_model_dir}{sdxl_name}.safetensors"
+    print("using local model file: ", model_file)
+
+    pipe = StableDiffusionXLPipeline.from_single_file(
+        model_file,
+        torch_dtype=torch.float16,
+        variant="fp16"
+    )
+    tokenizer = pipe.tokenizer
+    tokenizer_2 = pipe.tokenizer_2
+    text_encoder = pipe.text_encoder
+    text_encoder_2 = pipe.text_encoder_2
+    vae = pipe.vae
+    unet = pipe.unet
+
+else: # HF diffusers format
 # sdxl_name = 'stabilityai/stable-diffusion-xl-base-1.0'
 
-tokenizer = CLIPTokenizer.from_pretrained(
-    sdxl_name, subfolder="tokenizer")
-tokenizer_2 = CLIPTokenizer.from_pretrained(
-    sdxl_name, subfolder="tokenizer_2")
-text_encoder = CLIPTextModel.from_pretrained(
-    sdxl_name, subfolder="text_encoder", torch_dtype=torch.float16, variant="fp16")
-text_encoder_2 = CLIPTextModel.from_pretrained(
-    sdxl_name, subfolder="text_encoder_2", torch_dtype=torch.float16, variant="fp16")
-vae = AutoencoderKL.from_pretrained(
-    sdxl_name, subfolder="vae", torch_dtype=torch.bfloat16, variant="fp16")  # bfloat16 vae
-unet = UNet2DConditionModel.from_pretrained(
-    sdxl_name, subfolder="unet", torch_dtype=torch.float16, variant="fp16")
+    tokenizer = CLIPTokenizer.from_pretrained(
+        sdxl_name, subfolder="tokenizer")
+    tokenizer_2 = CLIPTokenizer.from_pretrained(
+        sdxl_name, subfolder="tokenizer_2")
+    text_encoder = CLIPTextModel.from_pretrained(
+        sdxl_name, subfolder="text_encoder", torch_dtype=torch.float16, variant="fp16")
+    text_encoder_2 = CLIPTextModel.from_pretrained(
+        sdxl_name, subfolder="text_encoder_2", torch_dtype=torch.float16, variant="fp16")
+    vae = AutoencoderKL.from_pretrained(
+        sdxl_name, subfolder="vae", torch_dtype=torch.bfloat16, variant="fp16")  # bfloat16 vae
+    unet = UNet2DConditionModel.from_pretrained(
+        sdxl_name, subfolder="unet", torch_dtype=torch.float16, variant="fp16")
 
 unet.set_attn_processor(AttnProcessor2_0())
 vae.set_attn_processor(AttnProcessor2_0())
