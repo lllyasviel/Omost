@@ -1,0 +1,22 @@
+services:
+  omost:
+    # edit below to run on a container runtime other than nvidia-container-runtime.
+    # not yet tested with rocm/AMD GPUs
+    # Comment out the "deploy" section to run on CPU only
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              capabilities: [gpu, utility, compute]
+              count: 1 # Currently omost can only handle one gpu device!!!
+    # Uncomment the image line to pull the image from the container registry.
+    # Also, comment out the build section.
+    #image: ghcr.io/lllyasviel/omost:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "7860:7860"
+    volumes:
+      - ./hf_download:/app/hf_download
