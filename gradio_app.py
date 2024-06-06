@@ -171,10 +171,31 @@ def chat_fn(message: str, history: list, seed:int, temperature: float, top_p: fl
 
     outputs = []
     if is_mac:
-        for text in mlx_lm.stream_generate(llm_model, llm_tokenizer, input_ids.cpu().numpy(), temp=temperature, top_p=top_p):
-            outputs.append(text)
-            # print(outputs)
-            yield "".join(outputs), interrupter
+        # for text in mlx_lm.stream_generate(llm_model, llm_tokenizer, input_ids.cpu().numpy(), temp=temperature, top_p=top_p):
+        #     outputs.append(text)
+        #     # print(outputs)
+        #     yield "".join(outputs), interrupter
+
+        max_tokens = 100
+        detokenizer = tokenizer.detokenizer
+        detokenizer.reset()
+        prompt_tokens = input_ids.cpu().numpy()
+        for (token, prob), n in zip(
+            generate_step(prompt_tokens, llm_model, **generate_kwargs),
+            range(max_tokens),
+        ):
+            if token == llm_tokenizer.eos_token_id:
+                break
+            detokenizer.add_token(token)
+
+            # Yield the last segment if streaming
+            # yield detokenizer.last_segment
+            outputs.append(detokenizer.last_segment)
+
+        detokenizer.finalize()
+        # yield detokenizer.last_segment
+        outputs.append(detokenizer.last_segment)
+
     else:
         Thread(target=llm_model.generate, kwargs=generate_kwargs).start()
         for text in streamer:
