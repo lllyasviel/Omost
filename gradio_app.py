@@ -13,8 +13,7 @@ import numpy as np
 import gradio as gr
 import tempfile
 if is_mac:
-    import mlx_lm
-    # from mlx_lm import load, stream_generate
+    from mlx_lm_wrapper import load_mlx_lm
 
 
 gradio_temp_dir = os.path.join(tempfile.gettempdir(), 'gradio')
@@ -80,7 +79,7 @@ if is_mac:
     # llm_name = "mlx-community/Phi-3-mini-128k-instruct-8bit"
     llm_name = "mlx-community/Meta-Llama-3-8B-4bit"
     # llm_name = "mlx-community/dolphin-2.9.1-llama-3-8b-4bit"
-    llm_model, llm_tokenizer = mlx_lm.load(llm_name)
+    llm_model, llm_tokenizer = load_mlx_lm(llm_name)
 else:
     # llm_name = 'lllyasviel/omost-phi-3-mini-128k-8bits'
     llm_name = 'lllyasviel/omost-llama-3-8b-4bits'
@@ -168,40 +167,12 @@ def chat_fn(message: str, history: list, seed:int, temperature: float, top_p: fl
     if temperature == 0:
         generate_kwargs['do_sample'] = False
 
+    Thread(target=llm_model.generate, kwargs=generate_kwargs).start()
 
     outputs = []
-    if is_mac:
-        # for text in mlx_lm.stream_generate(llm_model, llm_tokenizer, input_ids.cpu().numpy(), temp=temperature, top_p=top_p):
-        #     outputs.append(text)
-        #     # print(outputs)
-        #     yield "".join(outputs), interrupter
-
-        max_tokens = 100
-        detokenizer = tokenizer.detokenizer
-        detokenizer.reset()
-        prompt_tokens = input_ids.cpu().numpy()
-        for (token, prob), n in zip(
-            generate_step(prompt_tokens, llm_model, **generate_kwargs),
-            range(max_tokens),
-        ):
-            if token == llm_tokenizer.eos_token_id:
-                break
-            detokenizer.add_token(token)
-
-            # Yield the last segment if streaming
-            # yield detokenizer.last_segment
-            outputs.append(detokenizer.last_segment)
-
-        detokenizer.finalize()
-        # yield detokenizer.last_segment
-        outputs.append(detokenizer.last_segment)
-
-    else:
-        Thread(target=llm_model.generate, kwargs=generate_kwargs).start()
-        for text in streamer:
-            outputs.append(text)
-            # print(outputs)
-            yield "".join(outputs), interrupter
+    for text in streamer:
+        outputs.append(text)
+        yield "".join(outputs), interrupter
 
     return
 
