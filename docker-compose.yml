@@ -12,7 +12,7 @@ services:
               count: 1 # Currently omost can only handle one gpu device!!!
     # Uncomment the image line to pull the image from the container registry.
     # Also, comment out the build section.
-    #image: ghcr.io/lllyasviel/Omost:latest
+    #image: ghcr.io/lllyasviel/omost:latest
     build:
       context: .
       dockerfile: Dockerfile

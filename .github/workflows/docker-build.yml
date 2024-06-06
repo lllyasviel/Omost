@@ -41,14 +41,14 @@ jobs:
           - image: Omost
             context: .
             file: Dockerfile
-            platforms: linux/amd64
+            platforms: linux/amd64,linux/arm64
             device: cuda
             suffix: -cuda
 
           - image: Omost
             context: .
             file: Dockerfile
-            platforms: linux/amd64
+            platforms: linux/amd64,linux/arm64
             device: rocm
             suffix: -rocm
 
