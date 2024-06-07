@@ -1,4 +1,7 @@
 import os
+import platform
+is_mac = platform.system() == 'Darwin'
+from huggingface_hub import snapshot_download
 
 os.environ['HF_HOME'] = os.path.join(os.path.dirname(__file__), 'hf_download')
 HF_TOKEN = None
@@ -11,10 +14,11 @@ import numpy as np
 import gradio as gr
 import tempfile
 
+from openai import OpenAI
+import subprocess
+
 gradio_temp_dir = os.path.join(tempfile.gettempdir(), 'gradio')
 os.makedirs(gradio_temp_dir, exist_ok=True)
-
-from threading import Thread
 
 # Phi3 Hijack
 from transformers.models.phi3.modeling_phi3 import Phi3PreTrainedModel
@@ -32,6 +36,9 @@ from transformers.generation.stopping_criteria import StoppingCriteriaList
 
 import lib_omost.canvas as omost_canvas
 
+# https://medium.com/@natsunoyuki/using-civitai-models-with-diffusers-package-45e0c475a67e
+# https://huggingface.co/docs/diffusers/en/api/loaders/single_file
+# https://github.com/huggingface/diffusers/blob/v0.28.0/scripts/convert_original_stable_diffusion_to_diffusers.py
 
 # SDXL
 
@@ -66,25 +73,49 @@ pipeline = StableDiffusionXLOmostPipeline(
 
 memory_management.unload_all_models([text_encoder, text_encoder_2, vae, unet])
 
+openai_api_base = "http://127.0.0.1:8080/v1"
+client = OpenAI(api_key="EMPTY", base_url=openai_api_base)
+
 # LLM
+# llm_name = "mlx-community/Phi-3-mini-128k-instruct-8bit"
+llm_name = "mlx-community/Meta-Llama-3-8B-4bit"
+# llm_name = "mlx-community/dolphin-2.9.1-llama-3-8b-4bit"
 
-# llm_name = 'lllyasviel/omost-phi-3-mini-128k-8bits'
-llm_name = 'lllyasviel/omost-llama-3-8b-4bits'
-# llm_name = 'lllyasviel/omost-dolphin-2.9-llama3-8b-4bits'
+def load_model(model_name):
+    global process
 
-llm_model = AutoModelForCausalLM.from_pretrained(
-    llm_name,
-    torch_dtype=torch.bfloat16,  # This is computation type, not load/memory type. The loading quant type is baked in config.
-    token=HF_TOKEN,
-    device_map="auto"  # This will load model to gpu with an offload system
-)
+    local_model_dir = os.path.join(
+        os.environ['HF_HOME'], llm_name.split("/")[1]
+    )
 
-llm_tokenizer = AutoTokenizer.from_pretrained(
-    llm_name,
-    token=HF_TOKEN
-)
+    if not os.path.exists(local_model_dir):
+        snapshot_download(repo_id=llm_name, local_dir=local_model_dir)
 
-memory_management.unload_all_models(llm_model)
+    command = ["python3", "-m", "mlx_lm.server", "--model", local_model_dir]
+
+    try:
+        process = subprocess.Popen(
+            command, stdin=subprocess.PIPE, stderr=subprocess.PIPE, text=True
+        )
+        process.stdin.write("y\n")
+        process.stdin.flush()
+        print("Model Loaded")
+        return True #{model_status: "Model Loaded"}
+    except Exception as e:
+        print(f"Exception occurred: {str(e)}")
+        return False #{model_status: f"Exception occurred: {str(e)}"}
+
+load_model(llm_name)
+
+def kill_process():
+    global process
+    process.terminate()
+    time.sleep(2)
+    if process.poll() is None:  # Check if the process has indeed terminated
+        process.kill()  # Force kill if still running
+
+    print("Model Killed")
+    return {model_status: "Model Unloaded"}
 
 
 @torch.inference_mode()
@@ -110,7 +141,6 @@ def resize_without_crop(image, target_width, target_height):
     resized_image = pil_image.resize((target_width, target_height), Image.LANCZOS)
     return np.array(resized_image)
 
-
 @torch.inference_mode()
 def chat_fn(message: str, history: list, seed:int, temperature: float, top_p: float, max_new_tokens: int) -> str:
     np.random.seed(int(seed))
@@ -125,49 +155,26 @@ def chat_fn(message: str, history: list, seed:int, temperature: float, top_p: fl
 
     conversation.append({"role": "user", "content": message})
 
-    memory_management.load_models_to_gpu(llm_model)
-
-    input_ids = llm_tokenizer.apply_chat_template(
-        conversation, return_tensors="pt", add_generation_prompt=True).to(llm_model.device)
-
-    streamer = TextIteratorStreamer(llm_tokenizer, timeout=10.0, skip_prompt=True, skip_special_tokens=True)
-
-    def interactive_stopping_criteria(*args, **kwargs) -> bool:
-        if getattr(streamer, 'user_interrupted', False):
-            print('User stopped generation')
-            return True
-        else:
-            return False
-
-    stopping_criteria = StoppingCriteriaList([interactive_stopping_criteria])
-
-    def interrupter():
-        streamer.user_interrupted = True
-        return
-
-    generate_kwargs = dict(
-        input_ids=input_ids,
-        streamer=streamer,
-        stopping_criteria=stopping_criteria,
-        max_new_tokens=max_new_tokens,
-        do_sample=True,
+    response = client.chat.completions.create(
+        model="gpt",
+        messages=conversation,
         temperature=temperature,
         top_p=top_p,
+        # frequency_penalty=freq_penalty,
+        max_tokens=max_new_tokens,
+        stream=True,
     )
+    stop = ["<|im_end|>", "<|endoftext|>"]
+    partial_message = ""
+    for chunk in response:
+        if len(chunk.choices) != 0:
+            if chunk.choices[0].delta.content not in stop:
+                partial_message = partial_message + chunk.choices[0].delta.content
+            else:
+                partial_message = partial_message + ""
+            yield partial_message
 
-    if temperature == 0:
-        generate_kwargs['do_sample'] = False
-
-    Thread(target=llm_model.generate, kwargs=generate_kwargs).start()
-
-    outputs = []
-    for text in streamer:
-        outputs.append(text)
-        # print(outputs)
-        yield "".join(outputs), interrupter
-
-    return
-
+    return partial_message
 
 @torch.inference_mode()
 def post_chat(history):
