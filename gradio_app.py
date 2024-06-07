@@ -1,6 +1,6 @@
 import os
 
-os.environ['HF_HOME'] = os.path.join(os.path.dirname(__file__), 'hf_download')
+os.environ['HF_HOME'] = os.path.join(os.path.dirname(__file__), 'models/hf_download')
 HF_TOKEN = None
 
 import lib_omost.memory_management as memory_management
