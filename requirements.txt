@@ -12,3 +12,4 @@ pillow
 einops
 torch
 peft
+openai
