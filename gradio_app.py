@@ -38,6 +38,9 @@ from transformers.generation.stopping_criteria import StoppingCriteriaList
 
 import lib_omost.canvas as omost_canvas
 
+def bytes_to_giga_bytes(bytes):
+    return bytes / 1024 / 1024 / 1024
+
 llm_models_list=[
     'lllyasviel/omost-llama-3-8b-4bits',
     'lllyasviel/omost-dolphin-2.9-llama3-8b-4bits',
@@ -74,6 +77,7 @@ text_encoder_2 = None
 vae = None
 unet = None
 pipeline = None
+model_pipeline = None
 
 def load_model(models_dir, image_diffusion_model_select):
     global tokenizer, tokenizer_2, text_encoder, text_encoder_2, vae, unet, pipeline
@@ -84,6 +88,7 @@ def load_model(models_dir, image_diffusion_model_select):
         print(f"{image_diffusion_model_select}.safetensors not found in {models_dir} .")
         print(f"Please download the model file from https://huggingface.co/SG161222/RealVisXL_V4.0/resolve/main/RealVisXL_V4.0.safetensors to {models_dir}")
         print(f"Next, it will switch to the Hugging Face directory 'SG161222/RealVisXL_V4.0' to download and run.")
+        image_diffusion_model_select = 'RealVisXL_V4.0'
         hf_repo_id = 'SG161222/RealVisXL_V4.0'
 
         tokenizer = CLIPTokenizer.from_pretrained(
@@ -175,8 +180,6 @@ def chat_fn(message: str, history: list, seed:int, temperature: float, top_p: fl
         token=HF_TOKEN
     )
 
-    memory_management.unload_all_models(llm_model)
-
     chat_start_time = time.perf_counter()
 
     seed = process_seed(seed)
@@ -235,7 +238,7 @@ def chat_fn(message: str, history: list, seed:int, temperature: float, top_p: fl
         yield "".join(outputs), interrupter
 
     chat_time = time.perf_counter() - chat_start_time
-    print(f'Chat total time: {chat_time:.2f} seconds')
+    print(f'Chat total time: {chat_time:.2f} seconds. Max memory allocated: {bytes_to_giga_bytes(torch.cuda.max_memory_allocated()):.2f} GB')
     print('Chat finished')
 
     return
@@ -269,8 +272,6 @@ def diffusion_fn(chatbot, canvas_outputs, num_samples, seed, image_width, image_
     print(f'Loading image diffusion model: {image_diffusion_model_select}')
 
     pipeline = load_model(models_dir, image_diffusion_model_select)
-
-    memory_management.unload_all_models([text_encoder, text_encoder_2, vae, unet])
 
     image_width, image_height = int(image_width // 64) * 64, int(image_height // 64) * 64
 
@@ -312,7 +313,7 @@ def diffusion_fn(chatbot, canvas_outputs, num_samples, seed, image_width, image_
         generator=rng,
         guidance_scale=float(cfg),
     ).images
-
+    
     memory_management.load_models_to_gpu([vae])
     latents = latents.to(dtype=vae.dtype, device=vae.device) / vae.config.scaling_factor
     pixels = vae.decode(latents).sample
@@ -357,14 +358,15 @@ def diffusion_fn(chatbot, canvas_outputs, num_samples, seed, image_width, image_
         #image_path = os.path.join(gradio_temp_dir, f"{unique_hex}_{i}.png")   
         current_time = datetime.datetime.now()
         time_string = current_time.strftime("%Y-%m-%d_%H-%M-%S")
-        image_path = os.path.join(outputs_dir, f"{time_string}_{i}_{unique_hex}.png")           
+        image_path = os.path.join(outputs_dir, f"{time_string}_{i}_{image_diffusion_model_select}_{unique_hex}.png")           
         print(f'Image saved at: {image_path}')
         image = Image.fromarray(pixels[i])
         image.save(image_path)
         chatbot = chatbot + [(None, (image_path, 'image'))]
 
     diffusion_time = time.perf_counter() - diffusion_start_time
-    print(f'Image render total time: {diffusion_time:.2f} seconds')
+    print(f'Image render total time: {diffusion_time:.2f} seconds. Max memory allocated: {bytes_to_giga_bytes(torch.cuda.max_memory_allocated()):.2f} GB')
+    memory_management.unload_all_models([text_encoder, text_encoder_2, vae, unet])
 
     return chatbot
 
@@ -394,7 +396,7 @@ with gr.Blocks(
 
                 seed = gr.Number(label="Random Seed", value=-1, precision=0)
 
-                with gr.Accordion(open=True, label='Language Model'):
+                with gr.Accordion(open=False, label='Language Model'):
                     with gr.Group():
                         with gr.Row():
                             temperature = gr.Slider(
