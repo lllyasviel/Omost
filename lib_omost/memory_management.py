@@ -1,6 +1,6 @@
 import torch
 from contextlib import contextmanager
-
+import gc
 
 high_vram = False
 gpu = torch.device('cuda')
@@ -45,11 +45,13 @@ def load_models_to_gpu(models):
 
     for m in models_to_load:
         with movable_bnb_model(m):
+            # Using `to_empty` to avoid copying meta tensors directly to GPU
             m.to(gpu)
         print('Load to GPU:', m.__class__.__name__)
 
     models_in_gpu = list(set(models_in_gpu + models))
     torch.cuda.empty_cache()
+    gc.collect()
     return
 
 
@@ -65,3 +67,4 @@ def unload_all_models(extra_models=None):
     models_in_gpu = list(set(models_in_gpu + extra_models))
 
     return load_models_to_gpu([])
+

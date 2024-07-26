@@ -1,12 +1,18 @@
 import numpy as np
 import copy
 
+from diffusers.utils import is_torch_version
 from tqdm.auto import trange
 from diffusers.pipelines.stable_diffusion_xl.pipeline_stable_diffusion_xl_img2img import *
 from diffusers.models.transformers import Transformer2DModel
 
-
 original_Transformer2DModel_forward = Transformer2DModel.forward
+
+
+if is_torch_version(">=", "1.9.0"):
+    _LOW_CPU_MEM_USAGE_DEFAULT = True
+else:
+    _LOW_CPU_MEM_USAGE_DEFAULT = False
 
 
 def hacked_Transformer2DModel_forward(
@@ -62,7 +68,6 @@ class KModel:
         betas = torch.linspace(linear_start ** 0.5, linear_end ** 0.5, timesteps, dtype=torch.float64) ** 2
         alphas = 1. - betas
         alphas_cumprod = torch.tensor(np.cumprod(alphas, axis=0), dtype=torch.float32)
-
         self.sigmas = ((1 - alphas_cumprod) / alphas_cumprod) ** 0.5
         self.log_sigmas = self.sigmas.log()
         self.sigma_data = 1.0
@@ -134,7 +139,8 @@ class OmostCrossAttnProcessor:
         masks = []
 
         for m, c in encoder_hidden_states:
-            m = torch.nn.functional.interpolate(m[None, None, :, :], (H, W), mode='nearest-exact').flatten().unsqueeze(1).repeat(1, c.size(1))
+            m = torch.nn.functional.interpolate(m[None, None, :, :], (H, W), mode='nearest-exact').flatten().unsqueeze(
+                1).repeat(1, c.size(1))
             conds.append(c)
             masks.append(m)
 
@@ -174,9 +180,37 @@ class OmostCrossAttnProcessor:
 
 
 class StableDiffusionXLOmostPipeline(StableDiffusionXLImg2ImgPipeline):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self,
+                 vae: AutoencoderKL,
+                 text_encoder: CLIPTextModel,
+                 text_encoder_2: CLIPTextModelWithProjection,
+                 tokenizer: CLIPTokenizer,
+                 tokenizer_2: CLIPTokenizer,
+                 unet: UNet2DConditionModel,
+                 scheduler: Union[KarrasDiffusionSchedulers, None],
+                 image_encoder: CLIPVisionModelWithProjection = None,
+                 feature_extractor: CLIPImageProcessor = None,
+                 requires_aesthetics_score: bool = False,
+                 force_zeros_for_empty_prompt: bool = True,
+                 add_watermarker: Optional[bool] = None, ):
+
+        super().__init__(vae, text_encoder, text_encoder_2, tokenizer, tokenizer_2, unet, scheduler, image_encoder,
+                         feature_extractor, requires_aesthetics_score, force_zeros_for_empty_prompt, add_watermarker)
+        # Create new text_encoder_2 from the config of the provided text_encoder_2
         self.k_model = KModel(unet=self.unet)
+        self.loading_components = dict(
+            vae=vae,
+            text_encoder=text_encoder,
+            text_encoder_2=text_encoder_2,
+            tokenizer=tokenizer,
+            tokenizer_2=tokenizer_2,
+            unet=unet,
+            image_encoder=image_encoder,
+            feature_extractor=feature_extractor,
+        )
+        self.text_encoder = text_encoder
+        self.text_encoder_2 = text_encoder_2
+        self.unet = unet
 
         attn_procs = {}
         for name in self.unet.attn_processors.keys():
@@ -188,8 +222,81 @@ class StableDiffusionXLOmostPipeline(StableDiffusionXLImg2ImgPipeline):
         self.unet.set_attn_processor(attn_procs)
         return
 
+    def to(self, *args, **kwargs):
+        # Remove silence_dtype_warnings from kwargs if present
+        kwargs.pop('silence_dtype_warnings', None)
+        for k, v in self.loading_components.items():
+            if hasattr(v, 'to'):
+                v.to(*args, **kwargs)
+        return self
+
+
+    def load_lora_weights(
+        self, pretrained_model_name_or_path_or_dict: Union[str, Dict[str, torch.Tensor]], adapter_name=None, **kwargs
+    ):
+        """
+        Load LoRA weights specified in `pretrained_model_name_or_path_or_dict` into `self.unet` and
+        `self.text_encoder`.
+
+        All kwargs are forwarded to `self.lora_state_dict`.
+
+        See [`~loaders.LoraLoaderMixin.lora_state_dict`] for more details on how the state dict is loaded.
+
+        See [`~loaders.LoraLoaderMixin.load_lora_into_unet`] for more details on how the state dict is loaded into
+        `self.unet`.
+
+        See [`~loaders.LoraLoaderMixin.load_lora_into_text_encoder`] for more details on how the state dict is loaded
+        into `self.text_encoder`.
+
+        Parameters:
+            pretrained_model_name_or_path_or_dict (`str` or `os.PathLike` or `dict`):
+                See [`~loaders.LoraLoaderMixin.lora_state_dict`].
+            kwargs (`dict`, *optional*):
+                See [`~loaders.LoraLoaderMixin.lora_state_dict`].
+            adapter_name (`str`, *optional*):
+                Adapter name to be used for referencing the loaded adapter model. If not specified, it will use
+                `default_{i}` where i is the total number of adapters being loaded.
+        """
+        if not USE_PEFT_BACKEND:
+            raise ValueError("PEFT backend is required for this method.")
+
+        # if a dict is passed, copy it instead of modifying it inplace
+        if isinstance(pretrained_model_name_or_path_or_dict, dict):
+            pretrained_model_name_or_path_or_dict = pretrained_model_name_or_path_or_dict.copy()
+
+        # First, ensure that the checkpoint is a compatible one and can be successfully loaded.
+        state_dict, network_alphas = self.lora_state_dict(pretrained_model_name_or_path_or_dict, **kwargs)
+
+        is_correct_format = all("lora" in key or "dora_scale" in key for key in state_dict.keys())
+        if not is_correct_format:
+            raise ValueError("Invalid LoRA checkpoint.")
+
+        low_cpu_mem_usage = kwargs.pop("low_cpu_mem_usage", _LOW_CPU_MEM_USAGE_DEFAULT)
+
+        self.load_lora_into_unet(
+            state_dict,
+            network_alphas=network_alphas,
+            unet=getattr(self, self.unet_name) if not hasattr(self, "unet") else self.unet,
+            low_cpu_mem_usage=low_cpu_mem_usage,
+            adapter_name=adapter_name,
+            _pipeline=self,
+        )
+        self.load_lora_into_text_encoder(
+            state_dict,
+            network_alphas=network_alphas,
+            text_encoder=getattr(self, self.text_encoder_name)
+            if not hasattr(self, "text_encoder")
+            else self.text_encoder,
+            lora_scale=self.lora_scale,
+            low_cpu_mem_usage=low_cpu_mem_usage,
+            adapter_name=adapter_name,
+            _pipeline=self,
+        )
+
+        self.k_model = KModel(unet=self.unet)
+
     @torch.inference_mode()
-    def encode_bag_of_subprompts_greedy(self, prefixes: list[str], suffixes: list[str]):
+    def encode_bag_of_subprompts_greedy(self, prefixes: list[str], suffixes: list[str], lora_scale=None):
         device = self.text_encoder.device
 
         @torch.inference_mode()
@@ -217,7 +324,8 @@ class StableDiffusionXLOmostPipeline(StableDiffusionXLImg2ImgPipeline):
         @torch.inference_mode()
         def get_77_tokens_in_torch(subprompt_inds, tokenizer):
             # Note that all subprompt are theoretically less than 75 tokens (without bos/eos)
-            result = [tokenizer.bos_token_id] + subprompt_inds[:75] + [tokenizer.eos_token_id] + [tokenizer.pad_token_id] * 75
+            result = [tokenizer.bos_token_id] + subprompt_inds[:75] + [tokenizer.eos_token_id] + [
+                tokenizer.pad_token_id] * 75
             result = result[:77]
             result = torch.tensor([result]).to(device=device, dtype=torch.int64)
             return result
@@ -237,9 +345,24 @@ class StableDiffusionXLOmostPipeline(StableDiffusionXLImg2ImgPipeline):
             )
 
         @torch.inference_mode()
-        def double_encode(pair_of_inds):
+        def double_encode(pair_of_inds, lora_scale = None):
             inds = [pair_of_inds['ids_t1'], pair_of_inds['ids_t2']]
             text_encoders = [self.text_encoder, self.text_encoder_2]
+            if lora_scale is not None and isinstance(self, StableDiffusionXLLoraLoaderMixin):
+                self._lora_scale = lora_scale
+
+                # dynamically adjust the LoRA scale
+                if self.text_encoder is not None:
+                    if not USE_PEFT_BACKEND:
+                        adjust_lora_scale_text_encoder(self.text_encoder, lora_scale)
+                    else:
+                        scale_lora_layers(self.text_encoder, lora_scale)
+
+                if self.text_encoder_2 is not None:
+                    if not USE_PEFT_BACKEND:
+                        adjust_lora_scale_text_encoder(self.text_encoder_2, lora_scale)
+                    else:
+                        scale_lora_layers(self.text_encoder_2, lora_scale)
 
             pooled_prompt_embeds = None
             prompt_embeds_list = []
@@ -255,6 +378,15 @@ class StableDiffusionXLOmostPipeline(StableDiffusionXLImg2ImgPipeline):
                 prompt_embeds_list.append(prompt_embeds)
 
             prompt_embeds = torch.concat(prompt_embeds_list, dim=-1)
+            if self.text_encoder is not None:
+                if isinstance(self, StableDiffusionXLLoraLoaderMixin) and USE_PEFT_BACKEND:
+                    # Retrieve the original scale by scaling back the LoRA layers
+                    unscale_lora_layers(self.text_encoder, lora_scale)
+
+            if self.text_encoder_2 is not None:
+                if isinstance(self, StableDiffusionXLLoraLoaderMixin) and USE_PEFT_BACKEND:
+                    # Retrieve the original scale by scaling back the LoRA layers
+                    unscale_lora_layers(self.text_encoder_2, lora_scale)
             return prompt_embeds, pooled_prompt_embeds
 
         # Begin with tokenizing prefixes
@@ -298,7 +430,7 @@ class StableDiffusionXLOmostPipeline(StableDiffusionXLImg2ImgPipeline):
         conds, poolers = [], []
 
         for target in targets:
-            cond, pooler = double_encode(target)
+            cond, pooler = double_encode(target, lora_scale)
             conds.append(cond)
             poolers.append(pooler)
 
@@ -308,7 +440,7 @@ class StableDiffusionXLOmostPipeline(StableDiffusionXLImg2ImgPipeline):
         return dict(cond=conds_merged, pooler=poolers_merged)
 
     @torch.inference_mode()
-    def all_conds_from_canvas(self, canvas_outputs, negative_prompt):
+    def all_conds_from_canvas(self, canvas_outputs, negative_prompt, lora_scale=None, activation_text = None):
         mask_all = torch.ones(size=(90, 90), dtype=torch.float32)
         negative_cond, negative_pooler = self.encode_cropped_prompt_77tokens(negative_prompt)
         negative_result = [(mask_all, negative_cond)]
@@ -320,8 +452,11 @@ class StableDiffusionXLOmostPipeline(StableDiffusionXLImg2ImgPipeline):
             current_mask = torch.from_numpy(item['mask']).to(torch.float32)
             current_prefixes = item['prefixes']
             current_suffixes = item['suffixes']
-
-            current_cond = self.encode_bag_of_subprompts_greedy(prefixes=current_prefixes, suffixes=current_suffixes)
+            if activation_text is not None:
+                current_prefixes = [activation_text] + current_suffixes
+                print(f"Updated current prefixes: {current_prefixes}")
+            current_cond = self.encode_bag_of_subprompts_greedy(prefixes=current_prefixes, suffixes=current_suffixes,
+                                                                lora_scale=lora_scale)
 
             if positive_pooler is None:
                 positive_pooler = current_cond['pooler']
@@ -338,7 +473,6 @@ class StableDiffusionXLOmostPipeline(StableDiffusionXLImg2ImgPipeline):
 
         pooled_prompt_embeds = None
         prompt_embeds_list = []
-
         for tokenizer, text_encoder in zip(tokenizers, text_encoders):
             text_input_ids = tokenizer(
                 prompt,
@@ -379,7 +513,24 @@ class StableDiffusionXLOmostPipeline(StableDiffusionXLImg2ImgPipeline):
     ):
 
         device = self.unet.device
-        cross_attention_kwargs = cross_attention_kwargs or {}
+        cross_attention_kwargs = cross_attention_kwargs or None
+        text_encoder_lora_scale = cross_attention_kwargs.get("scale", None) if cross_attention_kwargs is not None else None
+
+        # Set the LoRA scale if applicable
+        if text_encoder_lora_scale is not None and isinstance(self, StableDiffusionXLLoraLoaderMixin):
+            self._lora_scale = text_encoder_lora_scale
+
+            if self.text_encoder is not None:
+                if not USE_PEFT_BACKEND:
+                    adjust_lora_scale_text_encoder(self.text_encoder, text_encoder_lora_scale)
+                else:
+                    scale_lora_layers(self.text_encoder, text_encoder_lora_scale)
+
+            if self.text_encoder_2 is not None:
+                if not USE_PEFT_BACKEND:
+                    adjust_lora_scale_text_encoder(self.text_encoder_2, text_encoder_lora_scale)
+                else:
+                    scale_lora_layers(self.text_encoder_2, text_encoder_lora_scale)
 
         # Sigmas
 
@@ -408,7 +559,8 @@ class StableDiffusionXLOmostPipeline(StableDiffusionXLImg2ImgPipeline):
         add_time_ids = add_time_ids.repeat(batch_size, 1).to(device)
         add_neg_time_ids = add_neg_time_ids.repeat(batch_size, 1).to(device)
         prompt_embeds = [(k.to(device), v.repeat(batch_size, 1, 1).to(noise)) for k, v in prompt_embeds]
-        negative_prompt_embeds = [(k.to(device), v.repeat(batch_size, 1, 1).to(noise)) for k, v in negative_prompt_embeds]
+        negative_prompt_embeds = [(k.to(device), v.repeat(batch_size, 1, 1).to(noise)) for k, v in
+                                  negative_prompt_embeds]
         pooled_prompt_embeds = pooled_prompt_embeds.repeat(batch_size, 1).to(noise)
         negative_pooled_prompt_embeds = negative_pooled_prompt_embeds.repeat(batch_size, 1).to(noise)
 
@@ -431,5 +583,19 @@ class StableDiffusionXLOmostPipeline(StableDiffusionXLImg2ImgPipeline):
         # Sample
 
         results = sample_dpmpp_2m(self.k_model, latents, sigmas, extra_args=sampler_kwargs, disable=False)
+
+        # Reset the LoRA scale if applicable
+        if text_encoder_lora_scale is not None and isinstance(self, StableDiffusionXLLoraLoaderMixin):
+            if self.text_encoder is not None:
+                if not USE_PEFT_BACKEND:
+                    adjust_lora_scale_text_encoder(self.text_encoder, 1.0)
+                else:
+                    scale_lora_layers(self.text_encoder, 1.0)
+
+            if self.text_encoder_2 is not None:
+                if not USE_PEFT_BACKEND:
+                    adjust_lora_scale_text_encoder(self.text_encoder_2, 1.0)
+                else:
+                    scale_lora_layers(self.text_encoder_2, 1.0)
 
         return StableDiffusionXLPipelineOutput(images=results)
